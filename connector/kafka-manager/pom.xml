@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kafka-manager</artifactId>
+    <artifactId>selc-onboarding-interceptor-connector-kafka-manager</artifactId>
 
     <dependencies>
         <dependency>

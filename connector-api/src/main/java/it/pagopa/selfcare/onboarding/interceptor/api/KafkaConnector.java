@@ -1,8 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.api;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingInstitutionRequest;
-
 public interface KafkaConnector<T> {
+     void getMessages();
 
-    OnboardingInstitutionRequest intercept(T message);
+//     T getMessages();
 }

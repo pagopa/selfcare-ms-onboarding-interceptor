@@ -1,4 +1,4 @@
 package it.pagopa.selfcare.onboarding.interceptor.core;
 
-public interface NameService {//TODO change Name
+public interface KafkaService {//TODO change Name
 }
