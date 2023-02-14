@@ -13,7 +13,7 @@ import java.util.Map;
 @Configuration
 @PropertySource("classpath:config/kafka-manager.properties")
 public class KafkaTopicConfig {
-    @Value(value = "${spring.kafka.bootstrap-servers}")
+    @Value(value = "${kafka-manager.onboarding-interceptor.bootstrapAddress}")
     private String bootstrapAddress;
 
     @Value(value = "${kafka-manager.onboarding-interceptor.topic}")
