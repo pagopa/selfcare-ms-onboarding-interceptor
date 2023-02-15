@@ -72,4 +72,18 @@ class ExternalApiRestClientTest extends BaseFeignRestClientTest {
         assertDoesNotThrow(executable);
     }
 
+    @Test
+    void autoApprovalOnboarding_fullyNull() {
+        // given
+        String institutionId = "institutionId2";
+        String productId = "productId2";
+        AutoApprovalOnboardingRequest request = mockInstance(new AutoApprovalOnboardingRequest());
+        request.setUsers(List.of(mockInstance(new User())));
+        request.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy())));
+        // when
+        Executable executable = () -> restClient.autoApprovalOnboarding(institutionId, productId, request);
+        // then
+        assertDoesNotThrow(executable);
+    }
+
 }
