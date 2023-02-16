@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.rest.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import feign.FeignException;
 import it.pagopa.selfcare.commons.connector.rest.BaseFeignRestClientTest;
 import it.pagopa.selfcare.commons.connector.rest.RestTestUtils;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.config.ExternalApiRestClientTestConfig;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestPropertySource(
         locations = "classpath:config/external-api-rest-client.properties",
@@ -59,7 +61,7 @@ class ExternalApiRestClientTest extends BaseFeignRestClientTest {
     }
 
     @Test
-    void autoApprovalOnboarding_fullyValued() {
+    void autoApprovalOnboarding() {
         // given
         String institutionId = "institutionId1";
         String productId = "productId1";
@@ -73,7 +75,7 @@ class ExternalApiRestClientTest extends BaseFeignRestClientTest {
     }
 
     @Test
-    void autoApprovalOnboarding_fullyNull() {
+    void autoApprovalOnboarding_badRequest() {
         // given
         String institutionId = "institutionId2";
         String productId = "productId2";
@@ -83,7 +85,7 @@ class ExternalApiRestClientTest extends BaseFeignRestClientTest {
         // when
         Executable executable = () -> restClient.autoApprovalOnboarding(institutionId, productId, request);
         // then
-        assertDoesNotThrow(executable);
+        assertThrows(FeignException.BadRequest.class, executable);
     }
 
 }

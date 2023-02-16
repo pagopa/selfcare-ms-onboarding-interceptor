@@ -5,7 +5,10 @@
   },
   "response": {
     "status": "201",
-    "jsonBody": {},
+    "jsonBody": {
+      "token": "string",
+      "document": "string"
+    },
     "headers": {
       "Content-Type": "application/json"
     }
