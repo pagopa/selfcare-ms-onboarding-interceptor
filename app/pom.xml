@@ -20,6 +20,11 @@
             <artifactId>selc-onboarding-interceptor-connector-rest</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>it.pagopa.selfcare</groupId>
+            <artifactId>selc-onboarding-interceptor-connector-kafka-manager</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>

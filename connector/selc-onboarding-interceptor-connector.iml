@@ -9,13 +9,13 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="selc-onboarding-interceptor-connector-api" />
-    <orderEntry type="module" module-name="selc-commons-base" />
+    <orderEntry type="library" name="Maven: it.pagopa.selfcare:selc-commons-base:2.5.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: ch.qos.logback.contrib:logback-json-classic:0.1.5" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.2.6" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.2.6" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: ch.qos.logback.contrib:logback-json-core:0.1.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: ch.qos.logback.contrib:logback-jackson:0.1.5" level="project" />
-    <orderEntry type="module" module-name="selc-commons-base" scope="TEST" production-on-test="" />
+    <orderEntry type="library" scope="TEST" name="Maven: it.pagopa.selfcare:selc-commons-base:test-jar:tests:2.5.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: jakarta.xml.bind:jakarta.xml.bind-api:2.3.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: jakarta.activation:jakarta.activation-api:1.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.20" level="project" />

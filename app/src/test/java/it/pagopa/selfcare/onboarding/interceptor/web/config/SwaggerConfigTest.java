@@ -1,7 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.web.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.pagopa.selfcare.onboarding.interceptor.core.NameService;
+import it.pagopa.selfcare.onboarding.interceptor.core.KafkaService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class SwaggerConfigTest {
 
     @MockBean
-    private NameService nameService;//TODO change Name
+    private KafkaService nameService;//TODO change Name
 
     @Autowired
     WebApplicationContext context;
