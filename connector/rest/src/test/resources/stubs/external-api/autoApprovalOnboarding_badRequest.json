@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/external/v1/onboarding/institutionId2/products/productId2"
+  },
+  "response": {
+    "status": "400",
+    "jsonBody": {
+      "status": "Error",
+      "message": "Bad Request"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
