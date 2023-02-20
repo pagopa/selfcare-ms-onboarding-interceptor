@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 public class InstitutionOnboardedNotification {
 
     private String id;
-    private String internalInstitutionID;
+    private String internalIstitutionID;
     private String product;
     private String state;
     private String filePath;

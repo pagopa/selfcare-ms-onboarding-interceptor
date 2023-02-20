@@ -8,4 +8,5 @@ public class InstitutionOnboardedBilling {
     private String vatNumber;
     private String recipientCode;
     private boolean publicService;
+
 }

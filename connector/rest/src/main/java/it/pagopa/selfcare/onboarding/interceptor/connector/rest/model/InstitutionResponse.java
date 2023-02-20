@@ -1,11 +1,12 @@
-package it.pagopa.selfcare.onboarding.interceptor.model.institution;
+package it.pagopa.selfcare.onboarding.interceptor.connector.rest.model;
 
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class Institution {
+public class InstitutionResponse {
 
     private String id;
     private String externalId;
@@ -21,6 +22,11 @@ public class Institution {
     private PspData paymentServiceProvider;
     private DpoData dataProtectionOfficer;
     private List<GeographicTaxonomy> geographicTaxonomies;
-    private CompanyInformations companyInformations;
-    private AssistanceContacts assistanceContacts;
+    private String rea;
+    private String shareCapital;
+    private String businessRegisterPlace;
+    private String supportEmail;
+    private String supportPhone;
+    private Boolean imported;
+
 }

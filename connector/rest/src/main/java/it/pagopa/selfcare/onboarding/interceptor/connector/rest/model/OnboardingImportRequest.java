@@ -7,6 +7,6 @@ import java.util.List;
 @Data
 public class OnboardingImportRequest {
 
-    private List<UserRequest> users;
+    private List<UserResponse> users;
     private ImportContractRequest importContract;
 }
