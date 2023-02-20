@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 @TestPropertySource(
         locations = "classpath:config/external-api-rest-client.properties",
         properties = {
-                "logging.level.it.pagopa.selfcare.dashboard.connector.rest=DEBUG",
+                "logging.level.it.pagopa.selfcare.onboarding-interceptor.connector.rest=DEBUG",
                 "spring.application.name=selc-onboarding-interceptor-connector-rest",
                 "feign.okhttp.enabled=true"
         })
