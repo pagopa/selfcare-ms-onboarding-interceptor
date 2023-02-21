@@ -10,7 +10,7 @@ public class UserResponse {
 
     private String name;
     private String surname;
-    private String taxCode;
+    private String fiscalCode;
     private PartyRole role;
     private String email;
     private List<String> roles;

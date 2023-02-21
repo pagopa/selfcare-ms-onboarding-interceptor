@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "/external/v1/onboarding/institutionId2/products/productId2"
+    "url": "/external/internal/v1/onboarding/institutionId2/products/productId2"
   },
   "response": {
     "status": "201",

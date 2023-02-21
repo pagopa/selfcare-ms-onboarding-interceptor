@@ -1,10 +1,12 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.rest;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.ExternalApiConnector;
-import it.pagopa.selfcare.onboarding.interceptor.connector.rest.client.ExternalApiRestClient;
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
+import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.UserResponse;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
+import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,12 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ExternalApiConnectorImpl implements ExternalApiConnector {
+public class InternalApiConnectorImpl implements InternalApiConnector {
 
     protected static final String EXTERNAL_ID_IS_REQUIRED = "An institution externalId is required";
     protected static final String PRODUCT_ID_IS_REQUIRED = "A productId is required";
     protected static final String INSTITUTION_ID_IS_REQUIRED = "An institutionId is required";
-    private final ExternalApiRestClient restClient;
+    private final InternalApiRestClient restClient;
 
     private static final Function<InstitutionResponse, Institution> INSTITUTION_RESPONSE_TO_INSTITUTION = partyInstitutionResponse -> {
         Institution coreInstitution = new Institution();
@@ -56,14 +58,14 @@ public class ExternalApiConnectorImpl implements ExternalApiConnector {
         User user = new User();
         user.setName(userResponse.getName());
         user.setSurname(userResponse.getSurname());
-        user.setSurname(userResponse.getTaxCode());
+        user.setTaxCode(userResponse.getFiscalCode());
         user.setEmail(userResponse.getEmail());
         user.setRole(userResponse.getRole());
         return user;
     };
 
     @Autowired
-    public ExternalApiConnectorImpl(ExternalApiRestClient restClient) {
+    public InternalApiConnectorImpl(InternalApiRestClient restClient) {
         this.restClient = restClient;
     }
 
@@ -97,9 +99,19 @@ public class ExternalApiConnectorImpl implements ExternalApiConnector {
         Assert.hasText(productId, PRODUCT_ID_IS_REQUIRED);
         List<UserResponse> userResponse = restClient.getInstitutionProductUsers(institutionId, productId);
         List<User> user = userResponse.stream().map(USER_RESPONSE_TO_USER).collect(Collectors.toList());
-        log.debug("getInstitutionProductUsers user = {}", user);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER, "getInstitutionProductUsers user = {}", user);
         log.trace("getInstitutionProductUsers end");
         return user;
+    }
+
+    @Override
+    public Product getProduct(String productId) {
+        log.trace("getProduct start");
+        log.debug("getProduct productId = {}", productId);
+        Product product = restClient.getProduct(productId);
+        log.debug("getProduct product = {}", product);
+        log.trace("getProduct end");
+        return product;
     }
 
 

@@ -4,6 +4,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 
 @TestConfiguration
-@Import(ExternalApiRestClientConfig.class)
-public class ExternalApiRestClientTestConfig {
+@Import(InternalApiRestClientConfig.class)
+public class InternalApiRestClientTestConfig {
 }

@@ -1,14 +1,11 @@
 {
   "request": {
     "method": "POST",
-    "url": "/external/v1/onboarding/institutionId1/products/productId1"
+    "url": "/external/internal/v1/onboarding/institutionId1/products/productId1"
   },
   "response": {
     "status": "201",
-    "jsonBody": {
-      "token": "string",
-      "document": "string"
-    },
+    "jsonBody": {},
     "headers": {
       "Content-Type": "application/json"
     }

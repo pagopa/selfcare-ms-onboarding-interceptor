@@ -3,7 +3,7 @@ package it.pagopa.selfcare.onboarding.interceptor.connector.rest.client;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import it.pagopa.selfcare.commons.connector.rest.BaseFeignRestClientTest;
 import it.pagopa.selfcare.commons.connector.rest.RestTestUtils;
-import it.pagopa.selfcare.onboarding.interceptor.connector.rest.config.ExternalApiRestClientTestConfig;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.config.InternalApiRestClientTestConfig;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.GeographicTaxonomy;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.User;
@@ -26,25 +26,25 @@ import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @TestPropertySource(
-        locations = "classpath:config/external-api-rest-client.properties",
+        locations = "classpath:config/internal-api-rest-client.properties",
         properties = {
                 "logging.level.it.pagopa.selfcare.onboarding-interceptor.connector.rest=DEBUG",
                 "spring.application.name=selc-onboarding-interceptor-connector-rest",
                 "feign.okhttp.enabled=true"
         })
 @ContextConfiguration(
-        initializers = ExternalApiRestClientTest.RandomPortInitializer.class,
-        classes = {ExternalApiRestClientTestConfig.class, HttpClientConfiguration.class})
-class ExternalApiRestClientTest extends BaseFeignRestClientTest {
+        initializers = InternalApiRestClientTest.RandomPortInitializer.class,
+        classes = {InternalApiRestClientTestConfig.class, HttpClientConfiguration.class})
+class InternalApiRestClientTest extends BaseFeignRestClientTest {
 
     @Order(1)
     @RegisterExtension
     static WireMockExtension wm = WireMockExtension.newInstance()
-            .options(RestTestUtils.getWireMockConfiguration("stubs/external-api"))
+            .options(RestTestUtils.getWireMockConfiguration("stubs/internal-api"))
             .build();
 
     @Autowired
-    private ExternalApiRestClient restClient;
+    private InternalApiRestClient restClient;
 
 
     public static class RandomPortInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -52,7 +52,7 @@ class ExternalApiRestClientTest extends BaseFeignRestClientTest {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext,
-                    String.format("EXTERNAL_API_SERVICE_URL=%s",
+                    String.format("INTERNAL_API_SERVICE_URL=%s",
                             wm.getRuntimeInfo().getHttpBaseUrl())
             );
         }
