@@ -1,12 +1,11 @@
 package it.pagopa.selfcare.onobarding.interceptor.connector.dao;
 
 import it.pagopa.selfcare.onboarding.interceptor.api.DaoConnector;
-import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingNotificationOperations;
+import it.pagopa.selfcare.onboarding.interceptor.model.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onobarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -20,12 +19,10 @@ import java.util.function.Function;
 public class DaoConnectorImpl implements DaoConnector {
 
     private final PendingOnboardingsRepository repository;
-    private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public DaoConnectorImpl(PendingOnboardingsRepository repository, MongoTemplate mongoTemplate) {
+    public DaoConnectorImpl(PendingOnboardingsRepository repository) {
         this.repository = repository;
-        this.mongoTemplate = mongoTemplate;
     }
 
 

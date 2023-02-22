@@ -1,6 +1,6 @@
 package it.pagopa.selfcare.onobarding.interceptor.connector.dao.model;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingNotificationOperations;
+import it.pagopa.selfcare.onboarding.interceptor.model.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import lombok.Data;
@@ -8,8 +8,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -18,10 +16,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Document("pendingOnboardings")
-public class PendingOnboardingEntity implements PendingOnboardingNotificationOperations, Persistable<String> {
+public class PendingOnboardingEntity implements PendingOnboardingNotificationOperations {
     public PendingOnboardingEntity(PendingOnboardingNotificationOperations entity) {
         this();
-        id = entity.getNotification().getId();
+        id = entity.getId();
         createdAt = entity.getCreatedAt();
         request = entity.getRequest();
         notification = entity.getNotification();
@@ -36,6 +34,6 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
 
     private InstitutionOnboardedNotification notification;
 
-    @Transient
-    private boolean isNew = true;
+    private String onboardingFailure;
+
 }

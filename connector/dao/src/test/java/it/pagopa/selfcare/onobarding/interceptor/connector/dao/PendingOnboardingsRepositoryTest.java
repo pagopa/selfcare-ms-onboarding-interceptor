@@ -1,5 +1,7 @@
 package it.pagopa.selfcare.onobarding.interceptor.connector.dao;
 
+import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
+import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedBilling;
@@ -19,8 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataMongoTest
 @EnableAutoConfiguration
@@ -42,22 +43,24 @@ class PendingOnboardingsRepositoryTest {
     void create() {
         //given
         Instant now = Instant.now().minusSeconds(1);
-        InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification());
+        int bias = 0;
+        InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
         notificationMock.setId(UUID.randomUUID().toString());
-        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded());
-        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling());
+        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
+        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
         notificationMock.setBilling(billing);
         notificationMock.setInstitution(institution);
-        AutoApprovalOnboardingRequest requestMock = mockInstance(new AutoApprovalOnboardingRequest());
-        requestMock.setAssistanceContacts(mockInstance(new AssistanceContacts()));
-        requestMock.setBillingData(mockInstance(new BillingData()));
-        requestMock.setUsers(List.of(mockInstance(new User())));
-        requestMock.setCompanyInformations(mockInstance(new CompanyInformations()));
-        requestMock.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy())));
+        AutoApprovalOnboardingRequest requestMock = mockInstance(new AutoApprovalOnboardingRequest(), bias);
+        requestMock.setAssistanceContacts(mockInstance(new AssistanceContacts(), bias));
+        requestMock.setBillingData(mockInstance(new BillingData(), bias));
+        requestMock.setUsers(List.of(mockInstance(new User(), bias)));
+        requestMock.setCompanyInformations(mockInstance(new CompanyInformations(), bias));
+        requestMock.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy(), bias)));
         PendingOnboardingEntity entity = mockInstance(new PendingOnboardingEntity(), "setCreatedAt");
         entity.setId(notificationMock.getId());
         entity.setNotification(notificationMock);
         entity.setRequest(requestMock);
+//        PendingOnboardingEntity entity = returnMock(1);
         //when
         PendingOnboardingEntity savedEntity = repository.insert(entity);
         //then
@@ -65,4 +68,53 @@ class PendingOnboardingsRepositoryTest {
         assertEquals(entity.getId(), savedEntity.getId());
     }
 
+    @Test
+    void findAll_atLeastOneRecord() {
+        //given
+        create();
+        //when
+        List<PendingOnboardingEntity> records = repository.findAll();
+        //the
+        assertTrue(records.size() > 0);
+    }
+
+    @Test
+    void update() {
+        //given
+        String id = UUID.randomUUID().toString();
+        PendingOnboardingEntity entity = returnMock(1);
+        entity.setId(id);
+        entity.setOnboardingFailure(OnboardingFailedException.class.getSimpleName());
+        PendingOnboardingEntity savedEntity = repository.insert(entity);
+        PendingOnboardingEntity entity1 = returnMock(2);
+        entity1.setId(id);
+        entity1.setOnboardingFailure(TestingProductUnavailableException.class.getSimpleName());
+        //when
+        PendingOnboardingEntity modifiedEntity = repository.save(entity1);
+        //then
+        assertEquals(entity.getId(), modifiedEntity.getId());
+        assertEquals(entity1.getNotification(), modifiedEntity.getNotification());
+        assertNotEquals(savedEntity.getNotification(), modifiedEntity.getNotification());
+        assertNotEquals(savedEntity.getOnboardingFailure(), modifiedEntity.getOnboardingFailure());
+    }
+
+    private PendingOnboardingEntity returnMock(int bias) {
+        InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
+        notificationMock.setId(UUID.randomUUID().toString());
+        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
+        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
+        notificationMock.setBilling(billing);
+        notificationMock.setInstitution(institution);
+        AutoApprovalOnboardingRequest requestMock = mockInstance(new AutoApprovalOnboardingRequest(), bias);
+        requestMock.setAssistanceContacts(mockInstance(new AssistanceContacts(), bias));
+        requestMock.setBillingData(mockInstance(new BillingData(), bias));
+        requestMock.setUsers(List.of(mockInstance(new User(), bias)));
+        requestMock.setCompanyInformations(mockInstance(new CompanyInformations(), bias));
+        requestMock.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy(), bias)));
+        PendingOnboardingEntity entity = mockInstance(new PendingOnboardingEntity(), "setCreatedAt");
+        entity.setId(notificationMock.getId());
+        entity.setNotification(notificationMock);
+        entity.setRequest(requestMock);
+        return entity;
+    }
 }
