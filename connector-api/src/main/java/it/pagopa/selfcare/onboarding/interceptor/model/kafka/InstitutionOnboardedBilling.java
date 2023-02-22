@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.model;
+package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
 import lombok.Data;
 

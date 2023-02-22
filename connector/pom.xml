@@ -20,5 +20,6 @@
   <modules>
     <module>rest</module>
     <module>kafka-manager</module>
+    <module>dao</module>
   </modules>
 </project>
