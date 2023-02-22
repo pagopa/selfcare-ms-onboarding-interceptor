@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onboarding.interceptor.api;
+package it.pagopa.selfcare.onboarding.interceptor.model;
 
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
@@ -21,4 +21,8 @@ public interface PendingOnboardingNotificationOperations {
     InstitutionOnboardedNotification getNotification();
 
     void setNotification(InstitutionOnboardedNotification notification);
+
+    String getOnboardingFailure();
+
+    void setOnboardingFailure(String error);
 }

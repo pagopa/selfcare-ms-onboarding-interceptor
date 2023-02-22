@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.exception;
+package it.pagopa.selfcare.onboarding.interceptor.exception;
 
 public class OnboardingFailedException extends RuntimeException {
 

@@ -1,5 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.api;
 
+import it.pagopa.selfcare.onboarding.interceptor.model.PendingOnboardingNotificationOperations;
+
 import java.util.List;
 import java.util.Optional;
 
