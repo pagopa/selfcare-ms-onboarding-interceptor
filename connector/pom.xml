@@ -9,6 +9,11 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>selc-onboarding-interceptor-connector</artifactId>
   <packaging>pom</packaging>
+  <modules>
+    <module>rest</module>
+    <module>kafka-manager</module>
+    <module>dao</module>
+  </modules>
 
   <dependencies>
     <dependency>
@@ -17,9 +22,5 @@
     </dependency>
   </dependencies>
 
-  <modules>
-    <module>rest</module>
-    <module>kafka-manager</module>
-    <module>dao</module>
-  </modules>
+
 </project>

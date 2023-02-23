@@ -88,6 +88,7 @@ class PendingOnboardingsRepositoryTest {
         PendingOnboardingEntity savedEntity = repository.insert(entity);
         PendingOnboardingEntity entity1 = returnMock(2);
         entity1.setId(id);
+        entity1.setNew(false);
         entity1.setOnboardingFailure(TestingProductUnavailableException.class.getSimpleName());
         //when
         PendingOnboardingEntity modifiedEntity = repository.save(entity1);
@@ -115,6 +116,7 @@ class PendingOnboardingsRepositoryTest {
         entity.setId(notificationMock.getId());
         entity.setNotification(notificationMock);
         entity.setRequest(requestMock);
+
         return entity;
     }
 }

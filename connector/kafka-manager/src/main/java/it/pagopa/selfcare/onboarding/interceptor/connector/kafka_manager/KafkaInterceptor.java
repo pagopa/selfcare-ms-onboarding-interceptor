@@ -1,13 +1,13 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.DaoConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
+import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.model.PendingOnboardingNotification;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
-import it.pagopa.selfcare.onboarding.interceptor.model.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public class KafkaInterceptor {
 
     private static final String TESTING_PRODUCT_SUFFIX = "coll";
     private final InternalApiConnector internalApiConnector;
-    private final DaoConnector daoConnector;
+    private final PendingOnboardingConnector pendingOnboardingConnector;
     private Function<Institution, AutoApprovalOnboardingRequest> ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST = institution -> {
         AutoApprovalOnboardingRequest request = new AutoApprovalOnboardingRequest();
         List<GeographicTaxonomy> geoTaxonomies = new ArrayList<>();
@@ -56,11 +56,11 @@ public class KafkaInterceptor {
     @Autowired
     public KafkaInterceptor(@Value("#{${onboarding-interceptor.products-allowed-list}}") Map<String, Set<String>> institutionProductsAllowedMap,
                             InternalApiConnector internalApiConnector,
-                            DaoConnector daoConnector) {
+                            PendingOnboardingConnector pendingOnboardingConnector) {
         log.trace("Initializing {}", KafkaInterceptor.class.getSimpleName());
         log.debug("institutionProductsAllowedMap = {}", institutionProductsAllowedMap);
         this.institutionProductsAllowedMap = Optional.ofNullable(institutionProductsAllowedMap);
-        this.daoConnector = daoConnector;
+        this.pendingOnboardingConnector = pendingOnboardingConnector;
         this.internalApiConnector = internalApiConnector;
     }
 
@@ -83,8 +83,8 @@ public class KafkaInterceptor {
             pendingOnboarding.setNotification(message);
             pendingOnboarding.setRequest(request);
             pendingOnboarding.setOnboardingFailure(e.getClass().getSimpleName());
-//            PendingOnboardingNotificationOperations saved = daoConnector.insert(pendingOnboarding);
-//            log.debug("Persisted failed onboarding request = {}", saved);
+            PendingOnboardingNotificationOperations saved = pendingOnboardingConnector.insert(pendingOnboarding);
+            log.debug("Persisted failed onboarding request = {}", saved);
         }
         log.debug("KafkaInterceptor Request to onboard = {}", request);
         log.trace("KafkaInterceptor intercept end");

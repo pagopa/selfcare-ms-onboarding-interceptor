@@ -1,8 +1,8 @@
 package it.pagopa.selfcare.onobarding.interceptor.connector.dao.model;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import lombok.Data;
 
 import java.time.Instant;
@@ -15,4 +15,6 @@ public class PendingOnboardingNotificationOperationsDummy implements PendingOnbo
     private AutoApprovalOnboardingRequest request;
 
     private InstitutionOnboardedNotification notification;
+
+    private String onboardingFailure;
 }

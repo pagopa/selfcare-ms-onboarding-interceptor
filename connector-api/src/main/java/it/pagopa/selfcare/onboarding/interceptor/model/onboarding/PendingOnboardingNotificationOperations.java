@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onboarding.interceptor.model;
+package it.pagopa.selfcare.onboarding.interceptor.model.onboarding;
 
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;

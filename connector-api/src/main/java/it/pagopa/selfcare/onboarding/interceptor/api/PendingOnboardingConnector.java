@@ -1,11 +1,11 @@
 package it.pagopa.selfcare.onboarding.interceptor.api;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.PendingOnboardingNotificationOperations;
+import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface DaoConnector {
+public interface PendingOnboardingConnector {
     PendingOnboardingNotificationOperations insert(PendingOnboardingNotificationOperations entity);
 
     PendingOnboardingNotificationOperations save(PendingOnboardingNotificationOperations entity);

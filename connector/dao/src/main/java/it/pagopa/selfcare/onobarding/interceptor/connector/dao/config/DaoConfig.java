@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 @EnableMongoAuditing(modifyOnCreate = false)
 @PropertySource("classpath:config/dao-config.properties")
 @Slf4j
-class DaoConfig {
+public class DaoConfig {
 
     public DaoConfig() {
         log.trace("Initializing {}...", DaoConfig.class.getSimpleName());
