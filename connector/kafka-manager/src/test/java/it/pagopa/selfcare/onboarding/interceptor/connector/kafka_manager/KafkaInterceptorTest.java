@@ -1,4 +1,5 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -149,7 +150,7 @@ class KafkaInterceptorTest {
         assertEquals(notificationMock, capturedNotification);
     }
 
-    //    @Test
+//    @Test
     void interceptKafkaMessage_KoOnboardingFailed() throws ExecutionException, InterruptedException {
         //given
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
@@ -179,6 +180,33 @@ class KafkaInterceptorTest {
         assertEquals(captured.getNotification(), capturedNotification);
         checkNotNullFields(captured.getRequest());
         assertEquals(OnboardingFailedException.class.getSimpleName(), captured.getOnboardingFailure());
+    }
+
+    @Test
+    void interceptTestOnboarding() throws ExecutionException, InterruptedException {
+        //given
+        InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
+        notificationMock.setProduct("prod-io-coll");
+        producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
+        producer.flush();
+        Institution institutionMock = returnIntitutionMock();
+        User userMock = returnUserMock(1);
+        when(apiConnector.getInstitutionById(anyString()))
+                .thenReturn(institutionMock);
+        when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
+                .thenReturn(List.of(userMock));
+        when(pendingOnboardingConnector.insert(any(PendingOnboardingNotificationOperations.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, PendingOnboardingNotificationOperations.class));
+        //then
+        verify(interceptor, timeout(5000).times(1))
+                .intercept(notificationArgumentCaptor.capture());
+        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        assertEquals(notificationMock, capturedNotification);
+
+        verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
+        verifyNoMoreInteractions(apiConnector);
+        verifyNoInteractions(pendingOnboardingConnector);
     }
 
     @Test
