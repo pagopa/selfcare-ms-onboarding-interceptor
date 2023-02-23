@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -22,6 +23,7 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
         this();
         id = entity.getId();
         createdAt = entity.getCreatedAt();
+        modifiedAt = entity.getModifiedAt();
         request = entity.getRequest();
         notification = entity.getNotification();
     }
@@ -30,6 +32,9 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
     private String id;
     @CreatedDate
     private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant modifiedAt;
 
     private AutoApprovalOnboardingRequest request;
 

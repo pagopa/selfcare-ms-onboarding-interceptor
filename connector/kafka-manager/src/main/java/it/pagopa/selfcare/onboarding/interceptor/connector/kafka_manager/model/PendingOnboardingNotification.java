@@ -14,6 +14,8 @@ public class PendingOnboardingNotification implements PendingOnboardingNotificat
 
     private Instant createdAt;
 
+    private Instant modifiedAt;
+
     private AutoApprovalOnboardingRequest request;
 
     private InstitutionOnboardedNotification notification;

@@ -25,4 +25,8 @@ public interface PendingOnboardingNotificationOperations {
     String getOnboardingFailure();
 
     void setOnboardingFailure(String error);
+
+    Instant getModifiedAt();
+
+    void setModifiedAt(Instant modifiedAt);
 }

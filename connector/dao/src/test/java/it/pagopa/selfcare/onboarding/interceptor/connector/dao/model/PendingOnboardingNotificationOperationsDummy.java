@@ -10,7 +10,10 @@ import java.time.Instant;
 @Data
 public class PendingOnboardingNotificationOperationsDummy implements PendingOnboardingNotificationOperations {
     private String id;
+
     private Instant createdAt;
+
+    private Instant modifiedAt;
 
     private AutoApprovalOnboardingRequest request;
 

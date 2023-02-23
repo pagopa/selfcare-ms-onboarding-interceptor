@@ -97,6 +97,7 @@ class PendingOnboardingsRepositoryTest {
         assertEquals(entity1.getNotification(), modifiedEntity.getNotification());
         assertNotEquals(savedEntity.getNotification(), modifiedEntity.getNotification());
         assertNotEquals(savedEntity.getOnboardingFailure(), modifiedEntity.getOnboardingFailure());
+        assertTrue(savedEntity.getModifiedAt().isBefore(modifiedEntity.getModifiedAt()));
     }
 
     private PendingOnboardingEntity returnMock(int bias) {

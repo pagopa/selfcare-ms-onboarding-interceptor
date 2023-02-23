@@ -75,7 +75,9 @@ public class KafkaInterceptor {
         request.setUsers(users);
         try {
             if (validateTestingProduct(message)) {
-//            externalApiConnector.autoApprovalOnboarding(message.getInstitution().getTaxCode(), institutionProductsAllowedMap.get().get(message.getProduct()), request);
+                for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
+                    internalApiConnector.autoApprovalOnboarding(message.getInstitution().getTaxCode(), productId, request);
+                }
             }
         } catch (TestingProductUnavailableException | OnboardingFailedException e) {
             PendingOnboardingNotificationOperations pendingOnboarding = new PendingOnboardingNotification();
