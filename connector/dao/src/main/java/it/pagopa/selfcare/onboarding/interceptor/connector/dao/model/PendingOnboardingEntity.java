@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onobarding.interceptor.connector.dao.model;
+package it.pagopa.selfcare.onboarding.interceptor.connector.dao.model;
 
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;

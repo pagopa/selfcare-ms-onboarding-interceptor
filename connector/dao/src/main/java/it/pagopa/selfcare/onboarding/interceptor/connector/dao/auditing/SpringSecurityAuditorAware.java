@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onobarding.interceptor.connector.dao.auditing;
+package it.pagopa.selfcare.onboarding.interceptor.connector.dao.auditing;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;

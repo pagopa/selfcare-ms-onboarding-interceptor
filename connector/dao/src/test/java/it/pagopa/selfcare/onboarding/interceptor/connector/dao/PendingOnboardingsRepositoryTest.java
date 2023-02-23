@@ -1,13 +1,13 @@
-package it.pagopa.selfcare.onobarding.interceptor.connector.dao;
+package it.pagopa.selfcare.onboarding.interceptor.connector.dao;
 
+import it.pagopa.selfcare.onboarding.interceptor.connector.dao.config.DaoTestConfig;
+import it.pagopa.selfcare.onboarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedBilling;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
-import it.pagopa.selfcare.onobarding.interceptor.connector.dao.config.DaoTestConfig;
-import it.pagopa.selfcare.onobarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

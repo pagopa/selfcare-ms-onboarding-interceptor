@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>selc-onboarding-interceptor-connector-dao</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

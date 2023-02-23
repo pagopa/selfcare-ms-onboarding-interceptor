@@ -1,8 +1,8 @@
-package it.pagopa.selfcare.onobarding.interceptor.connector.dao;
+package it.pagopa.selfcare.onboarding.interceptor.connector.dao;
 
 import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
+import it.pagopa.selfcare.onboarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
-import it.pagopa.selfcare.onobarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -32,12 +32,13 @@ public class PendingOnboardingConnectorImpl implements PendingOnboardingConnecto
         PendingOnboardingEntity insert;
         final PendingOnboardingEntity pendingOnboarding = new PendingOnboardingEntity(entity);
         try {
-//            insert = repository.insert(pendingOnboarding);
+            insert = repository.insert(pendingOnboarding);
+            log.debug("Saved pendingRequest = {}", insert);
         } catch (DuplicateKeyException e) {
             pendingOnboarding.setNew(false);
-//            insert = repository.save(pendingOnboarding);
+            insert = repository.save(pendingOnboarding);
         }
-        return null;
+        return insert;
     }
 
 
