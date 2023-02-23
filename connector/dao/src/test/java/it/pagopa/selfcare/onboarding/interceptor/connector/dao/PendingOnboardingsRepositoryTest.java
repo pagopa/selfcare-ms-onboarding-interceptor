@@ -44,23 +44,7 @@ class PendingOnboardingsRepositoryTest {
         //given
         Instant now = Instant.now().minusSeconds(1);
         int bias = 0;
-        InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
-        notificationMock.setId(UUID.randomUUID().toString());
-        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
-        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
-        notificationMock.setBilling(billing);
-        notificationMock.setInstitution(institution);
-        AutoApprovalOnboardingRequest requestMock = mockInstance(new AutoApprovalOnboardingRequest(), bias);
-        requestMock.setAssistanceContacts(mockInstance(new AssistanceContacts(), bias));
-        requestMock.setBillingData(mockInstance(new BillingData(), bias));
-        requestMock.setUsers(List.of(mockInstance(new User(), bias)));
-        requestMock.setCompanyInformations(mockInstance(new CompanyInformations(), bias));
-        requestMock.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy(), bias)));
-        PendingOnboardingEntity entity = mockInstance(new PendingOnboardingEntity(), "setCreatedAt");
-        entity.setId(notificationMock.getId());
-        entity.setNotification(notificationMock);
-        entity.setRequest(requestMock);
-//        PendingOnboardingEntity entity = returnMock(1);
+        PendingOnboardingEntity entity = returnMock(1);
         //when
         PendingOnboardingEntity savedEntity = repository.insert(entity);
         //then
