@@ -26,6 +26,7 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
         modifiedAt = entity.getModifiedAt();
         request = entity.getRequest();
         notification = entity.getNotification();
+        onboardingFailure = entity.getOnboardingFailure();
     }
 
     @Id
