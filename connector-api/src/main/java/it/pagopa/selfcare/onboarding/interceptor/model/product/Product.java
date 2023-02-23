@@ -10,5 +10,6 @@ public class Product {
     private String description;
     private String urlPublic;
     private String urlBO;
+    private ProductStatus status;
 
 }
