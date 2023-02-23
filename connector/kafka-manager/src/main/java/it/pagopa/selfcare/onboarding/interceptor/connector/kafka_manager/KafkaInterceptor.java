@@ -31,7 +31,7 @@ public class KafkaInterceptor {
     private static final String TESTING_PRODUCT_SUFFIX = "coll";
     private final InternalApiConnector internalApiConnector;
     private final PendingOnboardingConnector pendingOnboardingConnector;
-    private Function<Institution, AutoApprovalOnboardingRequest> ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST = institution -> {
+    static final Function<Institution, AutoApprovalOnboardingRequest> ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST = institution -> {
         AutoApprovalOnboardingRequest request = new AutoApprovalOnboardingRequest();
         List<GeographicTaxonomy> geoTaxonomies = new ArrayList<>();
         if (institution.getGeographicTaxonomies() != null && !institution.getGeographicTaxonomies().isEmpty()) {
@@ -73,6 +73,9 @@ public class KafkaInterceptor {
         final List<User> users = internalApiConnector.getInstitutionProductUsers(message.getInternalIstitutionID(), message.getProduct());
         final AutoApprovalOnboardingRequest request = ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
         request.setUsers(users);
+        request.getBillingData().setRecipientCode(message.getBilling().getRecipientCode());
+        request.getBillingData().setVatNumber(message.getBilling().getVatNumber());
+        request.getBillingData().setPublicServices(message.getBilling().isPublicService());
         try {
             if (validateTestingProduct(message)) {
                 for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {

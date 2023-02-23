@@ -1,0 +1,30 @@
+{
+    "address": "string",
+    "attributes": [],
+    "dataProtectionOfficer": {
+        "address": "string",
+        "email": "string",
+        "pec": "string"
+    },
+    "description": "string",
+    "digitalAddress": "string",
+    "externalId": "string",
+    "geographicTaxonomies": [{
+        "code": "058091",
+        "desc": "Roma - Comune"
+    }],
+    "id": "string",
+    "institutionType": "PSP",
+    "origin": "SELC",
+    "originId": "string",
+    "paymentServiceProvider": {
+        "abiCode": "12345",
+        "businessRegisterNumber": "12345678912",
+        "legalRegisterName": "PSP",
+        "legalRegisterNumber": "123",
+        "vatNumberGroup": false
+    },
+    "taxCode": "string",
+    "zipCode": "00161",
+    "logo": "string"
+}
