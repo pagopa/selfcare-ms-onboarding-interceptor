@@ -1,5 +1,4 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -78,6 +77,7 @@ class KafkaInterceptorTest {
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     private final ObjectMapper mapper;
+
     @Captor
     ArgumentCaptor<InstitutionOnboardedNotification> notificationArgumentCaptor;
 
@@ -99,6 +99,7 @@ class KafkaInterceptorTest {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.setTimeZone(TimeZone.getDefault());
     }
+
 
     @BeforeAll
     void setUp() {
