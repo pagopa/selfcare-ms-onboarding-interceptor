@@ -16,7 +16,7 @@
   <name>selc-onboarding-interceptor</name>
   <description>Microservice to manage onboarding to test enviroment for given products</description>
   <properties>
-    <selc-commons.version>2.4.3</selc-commons.version>
+    <selc-commons.version>2.4.4</selc-commons.version>
   </properties>
 
   <dependencyManagement>
@@ -115,5 +115,12 @@
     <module>connector</module>
   </modules>
 
-
+  <repositories>
+    <repository>
+      <id>selfcare-platform</id>
+      <url>
+        https://pkgs.dev.azure.com/pagopaspa/selfcare-platform-app-projects/_packaging/selfcare-platform/maven/v1
+      </url>
+    </repository>
+  </repositories>
 </project>
