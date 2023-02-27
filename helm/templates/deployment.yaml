@@ -28,6 +28,7 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccount: in-cluster-app      serviceAccount: in-cluster-app
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -39,6 +40,8 @@ spec:
                 name: application-insights
             - secretRef:
                 name: common-secrets
+            - secretRef:
+                name: onboarding-interceptor-event-secrets
             - configMapRef:
                 name: jwt
             - configMapRef:
