@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: { { include "this.fullname" . } }
-  namespace: { { .Values.namespace } }
+  name: {{ include "this.fullname" . }}
+  namespace: {{ .Values.namespace }}
   labels:
-    { { - include "this.labels" . | nindent 4 } }
+    {{- include "this.labels" . | nindent 4 }}
 spec:
-  type: { { .Values.service.type } }
+  type: {{ .Values.service.type }}
   ports:
-    - port: { { .Values.service.port } }
-      targetPort: { { .Values.service.targetPort } }
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
   selector:
-    { { - include "this.selectorLabels" . | nindent 4 } }
+    {{- include "this.selectorLabels" . | nindent 4 }}
