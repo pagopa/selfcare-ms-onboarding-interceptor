@@ -39,7 +39,11 @@ spec:
             - secretRef:
                 name: application-insights
             - secretRef:
+                name: mongo-credentials
+            - secretRef:
                 name: common-secrets
+            - secretRef:
+                name: onboarding-interceptor-event-secrets
             - configMapRef:
                 name: jwt
             - configMapRef:
