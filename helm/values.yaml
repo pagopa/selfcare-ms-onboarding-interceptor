@@ -84,7 +84,7 @@ tolerations: [ ]
 affinity: { }
 
 config:
-  MONGODB_NAME: selcProduct
+  MONGODB_NAME: selcOnboardingInterceptor
   APPLICATIONINSIGHTS_ROLE_NAME: "ms-onboarding-interceptor"
   KAFKA_AUTO_OFFSET_RESET_CONFIG: "earliest"
   KAFKA_CLIENT_ID: "onboarding-interceptor"
