@@ -51,7 +51,7 @@ ingress:
   hosts:
     - host: ""
       paths:
-        - path: /ms-onboarding-interceptor/v1/(.*)
+        - path: /ms-onboarding-interceptor/(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
@@ -84,7 +84,7 @@ tolerations: []
 affinity: {}
 
 config:
-  MONGODB_NAME: selcOnboardingInterceptor
+  MONGODB_NAME: "selcOnboardingInterceptor"
   APPLICATIONINSIGHTS_ROLE_NAME: "ms-onboarding-interceptor"
   KAFKA_AUTO_OFFSET_RESET_CONFIG: "earliest"
   KAFKA_CLIENT_ID: "onboarding-interceptor"
@@ -96,4 +96,4 @@ config:
   KAFKA_ONBOARDING_OUTCOME_POLL_INTERVAL: 300000
   KAFKA_ONBOARDING_OUTCOME_REQUEST_TIMEOUT: 60000
   KAFKA_ONBOARDING_OUTCOME_SESSION_TIMEOUT: 30000
-  ONBOARDING_ALLOWED_PRODUCTS: "{'prod-interop': 'prod-interop-coll'}"
+  ONBOARDING_ALLOWED_PRODUCTS: "{'prod-interop':{'prod-interop-coll', 'prod-pn-coll'}}"
