@@ -39,9 +39,7 @@ spec:
             - secretRef:
                 name: application-insights
             - secretRef:
-                name: mongo-credentials
-            - secretRef:
-                name: cdn-storage
+                name: common-secrets
             - configMapRef:
                 name: jwt
             - configMapRef:
