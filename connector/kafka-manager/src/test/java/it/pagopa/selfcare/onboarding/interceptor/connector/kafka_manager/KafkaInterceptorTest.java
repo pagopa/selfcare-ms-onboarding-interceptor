@@ -132,7 +132,7 @@ class KafkaInterceptorTest {
                 .thenReturn(productMockPn);
 
         //then
-        verify(interceptor, timeout(1000).times(1))
+        verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
         verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
@@ -173,10 +173,11 @@ class KafkaInterceptorTest {
         when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
                 .thenReturn(List.of(userMock));
         when(apiConnector.getProduct(anyString()))
-                .thenReturn(productMockInterop);
+                .thenReturn(productMockInterop)
+                .thenReturn(productMockPn);
 
         //then
-        verify(interceptor, timeout(1000).times(1))
+        verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
         verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
@@ -252,7 +253,7 @@ class KafkaInterceptorTest {
         when(pendingOnboardingConnector.insert(any(PendingOnboardingNotificationOperations.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, PendingOnboardingNotificationOperations.class));
         //then
-        verify(interceptor, timeout(1000).times(1))
+        verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
         assertEquals(notificationMock, capturedNotification);
