@@ -44,6 +44,8 @@ spec:
                 name: common-secrets
             - secretRef:
                 name: onboarding-interceptor-event-secrets
+            - secretRef:
+                name: onboarding-interceptor-apim-internal
             - configMapRef:
                 name: jwt
             - configMapRef:
