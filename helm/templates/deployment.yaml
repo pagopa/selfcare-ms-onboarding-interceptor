@@ -1,40 +1,40 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: { { include "this.fullname" . } }
-  namespace: { { .Values.namespace } }
+  name: {{ include "this.fullname" . }}
+  namespace: {{ .Values.namespace }}
   labels:
-    { { - include "this.labels" . | nindent 4 } }
+    {{- include "this.labels" . | nindent 4 }}
 spec:
-  { { - if not .Values.autoscaling.enabled } }
-  replicas: { { .Values.replicaCount } }
-  { { - end } }
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      { { - include "this.selectorLabels" . | nindent 6 } }
+      {{- include "this.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
-        checksum/config: { { include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum } }
-      { { - with .Values.podAnnotations } }
-      { { - toYaml . | nindent 8 } }
-      { { - end } }
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        { { - include "this.selectorLabels" . | nindent 8 } }
+        {{- include "this.selectorLabels" . | nindent 8 }}
     spec:
-      { { - with .Values.imagePullSecrets } }
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        { { - toYaml . | nindent 8 } }
-      { { - end } }
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
-        { { - toYaml .Values.podSecurityContext | nindent 8 } }
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       serviceAccount: in-cluster-app
       containers:
-        - name: { { .Chart.Name } }
+        - name: {{ .Chart.Name }}
           securityContext:
-            { { - toYaml .Values.securityContext | nindent 12 } }
+            {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: { { .Values.image.pullPolicy } }
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - secretRef:
                 name: application-insights
@@ -45,10 +45,10 @@ spec:
             - configMapRef:
                 name: common
             - configMapRef:
-                name: { { include "this.fullname" . } }
+                name: {{ include "this.fullname" . }}
           ports:
             - name: http
-              containerPort: { { .Values.containers.portNumber } }
+              containerPort: {{ .Values.containers.portNumber }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -79,8 +79,8 @@ spec:
             successThreshold: 1
             failureThreshold: 30
           resources:
-            { { - toYaml .Values.resources | nindent 12 } }
-      { { - with .Values.nodeSelector } }
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
         { { - toYaml . | nindent 8 } }
       { { - end } }
