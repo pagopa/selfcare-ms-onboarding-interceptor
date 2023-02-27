@@ -23,6 +23,7 @@ import it.pagopa.selfcare.onboarding.interceptor.model.product.ProductStatus;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -53,7 +54,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {KafkaInterceptor.class, KafkaConsumerConfig.class})
-@EmbeddedKafka(partitions = 1)
+@EmbeddedKafka(partitions = 1, controlledShutdown = true)
 @DirtiesContext
 @TestPropertySource(properties = {
         "onboarding-interceptor.products-allowed-list={'prod-interop':{'prod-interop-coll', 'prod-pn-coll'}}",
@@ -115,7 +116,6 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-interop");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
@@ -158,23 +158,18 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-interop");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
         productMockInterop.setId("prod-interop-coll");
         productMockInterop.setStatus(ProductStatus.INACTIVE);
-        Product productMockPn = returnProductMock();
-        productMockPn.setId("prod-pn-coll");
-        productMockPn.setStatus(ProductStatus.INACTIVE);
 
         when(apiConnector.getInstitutionById(anyString()))
                 .thenReturn(institutionMock);
         when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
                 .thenReturn(List.of(userMock));
         when(apiConnector.getProduct(anyString()))
-                .thenReturn(productMockInterop)
-                .thenReturn(productMockPn);
+                .thenReturn(productMockInterop);
 
         //then
         verify(interceptor, timeout(5000).times(1))
@@ -202,7 +197,6 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-io");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
@@ -242,7 +236,6 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-io-coll");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
 
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
@@ -287,6 +280,10 @@ class KafkaInterceptorTest {
         assertEquals(institution.getAssistanceContacts(), request.getAssistanceContacts());
     }
 
+    @AfterAll
+    void shutDown(){
+        producer.close();
+    }
 
     private InstitutionOnboardedNotification returnNotificationMock(int bias) {
         InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
