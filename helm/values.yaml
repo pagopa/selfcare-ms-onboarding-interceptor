@@ -97,4 +97,3 @@ config:
   KAFKA_ONBOARDING_OUTCOME_REQUEST_TIMEOUT: "60000"
   KAFKA_ONBOARDING_OUTCOME_SESSION_TIMEOUT: "30000"
   ONBOARDING_ALLOWED_PRODUCTS: "{'prod-interop':{'prod-interop-coll', 'prod-pn-coll'}}"
-  INTERNAL_API_SERVICE_URL: "https://api.uat.selfcare.pagopa.it"
