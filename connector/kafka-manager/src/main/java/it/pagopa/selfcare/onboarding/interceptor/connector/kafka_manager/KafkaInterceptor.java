@@ -103,10 +103,15 @@ public class KafkaInterceptor {
         }
         if (institutionProductsAllowedMap.isPresent() && institutionProductsAllowedMap.get().containsKey(message.getProduct())) {
             for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
-                Product product = internalApiConnector.getProduct(productId);
-                if (!TESTING.equals(product.getStatus())) {
-                    log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled", message.getProduct());
-                    throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer in Testing", message.getProduct()));
+                try {
+                    Product product = internalApiConnector.getProduct(productId);
+                    if (!TESTING.equals(product.getStatus())){
+                        log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled. Product status is: {}", productId, product.getStatus());
+                        throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer available", productId));
+                    }
+                }catch (RuntimeException e) {
+                    log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled. Reason: {}}", productId, e.getMessage());
+                    throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer available, error: %s", productId, e.getMessage()));
                 }
             }
         } else {
