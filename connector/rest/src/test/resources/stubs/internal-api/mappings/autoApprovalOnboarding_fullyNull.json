@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/external/internal/v1/onboarding/institutionId1/products/productId1"
+  },
+  "response": {
+    "status": "201",
+    "jsonBody": {},
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
