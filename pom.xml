@@ -4,209 +4,90 @@
 
   <modelVersion>4.0.0</modelVersion>
   <packaging>pom</packaging>
-  <groupId>it.pagopa.selfcare</groupId>
   <parent>
     <groupId>it.pagopa.selfcare</groupId>
     <artifactId>selc-starter-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
-
     <!-- lookup parent from repository -->
 
-
   </parent>
-
-
   <artifactId>selc-onboarding-interceptor</artifactId>
-
-
   <version>1.0-SNAPSHOT</version>
-
-
   <name>selc-onboarding-interceptor</name>
   <description>Microservice to manage onboarding to test enviroment for given products</description>
   <properties>
-    <selc-commons.version>2.4.3</selc-commons.version>
-
-
+    <selc-commons.version>2.4.4</selc-commons.version>
   </properties>
 
-
   <dependencyManagement>
-
-
     <dependencies>
-
-
       <dependency>
-
-
         <groupId>it.pagopa.selfcare</groupId>
-
-
         <artifactId>selc-onboarding-interceptor-connector-api</artifactId>
-
-
         <version>1.0-SNAPSHOT</version>
-
-
       </dependency>
-
-
       <dependency>
-
-
         <groupId>it.pagopa.selfcare</groupId>
-
-
         <artifactId>selc-onboarding-interceptor-connector-api</artifactId>
-
-
         <version>1.0-SNAPSHOT</version>
-
-
         <type>test-jar</type>
-
-
       </dependency>
-
-
       <dependency>
-
-
         <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-onboarding-interceptor-core</artifactId>
-
-
-        <version>1.0-SNAPSHOT</version>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-onboarding-interceptor-web</artifactId>
-
-
-        <version>1.0-SNAPSHOT</version>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-base</artifactId>
-
-
-        <version>${selc-commons.version}</version>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-base</artifactId>
-
-
-        <version>${selc-commons.version}</version>
-
-
-        <type>test-jar</type>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-web</artifactId>
-
-
-        <version>${selc-commons.version}</version>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-web</artifactId>
-
-
-        <version>${selc-commons.version}</version>
-
-
-        <type>test-jar</type>
-
-
-      </dependency>
-
-
-      <dependency>
-
-
-        <groupId>it.pagopa.selfcare</groupId>
-
-
         <artifactId>selc-onboarding-interceptor-connector-rest</artifactId>
-
-
         <version>1.0-SNAPSHOT</version>
-
-
       </dependency>
-
-
       <dependency>
-
-
         <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-connector-rest</artifactId>
-
-
-        <version>${selc-commons.version}</version>
-
-
+        <artifactId>selc-onboarding-interceptor-connector-kafka-manager</artifactId>
+        <version>1.0-SNAPSHOT</version>
       </dependency>
-
-
       <dependency>
-
-
         <groupId>it.pagopa.selfcare</groupId>
-
-
-        <artifactId>selc-commons-connector-rest</artifactId>
-
+        <artifactId>selc-onboarding-interceptor-connector-dao</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-onboarding-interceptor-core</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-onboarding-interceptor-web</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-base</artifactId>
         <version>${selc-commons.version}</version>
-
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-base</artifactId>
+        <version>${selc-commons.version}</version>
+        <type>test-jar</type>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-web</artifactId>
+        <version>${selc-commons.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-web</artifactId>
+        <version>${selc-commons.version}</version>
+        <type>test-jar</type>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-connector-rest</artifactId>
+        <version>${selc-commons.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>it.pagopa.selfcare</groupId>
+        <artifactId>selc-commons-connector-rest</artifactId>
+        <version>${selc-commons.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
       </dependency>
@@ -234,5 +115,12 @@
     <module>connector</module>
   </modules>
 
-
+  <repositories>
+    <repository>
+      <id>selfcare-platform</id>
+      <url>
+        https://pkgs.dev.azure.com/pagopaspa/selfcare-platform-app-projects/_packaging/selfcare-platform/maven/v1
+      </url>
+    </repository>
+  </repositories>
 </project>

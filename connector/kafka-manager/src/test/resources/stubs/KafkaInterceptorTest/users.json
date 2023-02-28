@@ -1,0 +1,24 @@
+[
+  {
+    "email": "email@example.com",
+    "id": "string",
+    "name": "string",
+    "fiscalCode": "string",
+    "roles": [
+      "string"
+    ],
+    "role": "DELEGATE",
+    "surname": "string"
+  },
+   {
+      "email": "email@example.com",
+      "id": "string",
+      "name": "string",
+      "fiscalCode": "string",
+      "roles": [
+        "string"
+      ],
+      "role": "MANAGER",
+      "surname": "string"
+    }
+]
