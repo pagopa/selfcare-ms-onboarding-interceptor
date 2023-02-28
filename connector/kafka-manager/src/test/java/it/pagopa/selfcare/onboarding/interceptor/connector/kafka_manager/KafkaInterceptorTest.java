@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
@@ -67,6 +68,7 @@ import static org.mockito.Mockito.*;
         "kafka-manager.onboarding-interceptor.security-protocol=PLAINTEXT"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Profile("KafkaInterceptor")
 class KafkaInterceptorTest {
     @SpyBean
     private KafkaInterceptor interceptor;
@@ -100,7 +102,6 @@ class KafkaInterceptorTest {
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.setTimeZone(TimeZone.getDefault());
-
     }
 
 
@@ -116,6 +117,7 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-interop");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
+        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
@@ -158,6 +160,7 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-interop");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
+        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
@@ -186,7 +189,6 @@ class KafkaInterceptorTest {
         assertEquals(captured.getNotification(), capturedNotification);
         checkNotNullFields(captured.getRequest());
         assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
-        producer.close();
 
     }
 
@@ -199,22 +201,14 @@ class KafkaInterceptorTest {
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
-        Product productMockInterop = returnProductMock();
-        productMockInterop.setId("prod-interop-coll");
-        productMockInterop.setStatus(ProductStatus.INACTIVE);
-        Product productMockPn = returnProductMock();
-        productMockPn.setId("prod-pn-coll");
-        productMockPn.setStatus(ProductStatus.INACTIVE);
+
         when(apiConnector.getInstitutionById(anyString()))
                 .thenReturn(institutionMock);
         when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
                 .thenReturn(List.of(userMock));
-        when(apiConnector.getProduct(anyString()))
-                .thenReturn(productMockInterop)
-                .thenReturn(productMockPn);
 
         //then
-        verify(interceptor, timeout(1000).times(1))
+        verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
         verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
@@ -236,7 +230,7 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
         notificationMock.setProduct("prod-io-coll");
         producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-
+        producer.flush();
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         when(apiConnector.getInstitutionById(anyString()))
@@ -281,7 +275,7 @@ class KafkaInterceptorTest {
     }
 
     @AfterAll
-    void shutDown(){
+    void shutdown() {
         producer.close();
     }
 
