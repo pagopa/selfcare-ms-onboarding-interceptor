@@ -131,9 +131,10 @@ class KafkaInterceptorTest {
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
-        when(apiConnector.getProduct(any()))
-                .thenReturn(productMockInterop)
-                .thenReturn(productMockPn);
+        doReturn(productMockInterop)
+                .doReturn(productMockPn)
+                .when(apiConnector)
+                .getProduct(anyString());
         //when
         producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
         producer.flush();
