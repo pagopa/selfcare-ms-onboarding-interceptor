@@ -111,7 +111,6 @@ class KafkaInterceptorTest {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, InstitutionOnboardedNotification>(configs, new StringSerializer(), new InstitutionOnboardingNotificationSerializer()).createProducer();
         reset(interceptor, apiConnector, pendingOnboardingConnector);
-
     }
 
     @Test
@@ -132,9 +131,9 @@ class KafkaInterceptorTest {
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
-        doReturn(productMockInterop)
-                .when(apiConnector)
-                .getProduct(anyString());
+        when(apiConnector.getProduct(any()))
+                .thenReturn(productMockInterop)
+                .thenReturn(productMockPn);
         //when
         producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
         producer.flush();
