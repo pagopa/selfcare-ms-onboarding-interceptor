@@ -77,6 +77,7 @@ public class KafkaInterceptor {
         request.getBillingData().setVatNumber(message.getBilling().getVatNumber());
         request.getBillingData().setPublicServices(message.getBilling().isPublicService());
         request.setPricingPlan(message.getPricingPlan());
+
         try {
             if (validateTestingProduct(message)) {
                 for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {

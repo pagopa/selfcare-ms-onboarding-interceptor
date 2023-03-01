@@ -12,6 +12,7 @@ import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.InstitutionOnboardingNotificationSerializer;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.KafkaConsumerConfig;
+import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
@@ -23,8 +24,8 @@ import it.pagopa.selfcare.onboarding.interceptor.model.product.ProductStatus;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
@@ -54,7 +56,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {KafkaInterceptor.class, KafkaConsumerConfig.class})
-@EmbeddedKafka(partitions = 1)
+@EmbeddedKafka(partitions = 1, controlledShutdown = true)
 @DirtiesContext
 @TestPropertySource(properties = {
         "onboarding-interceptor.products-allowed-list={'prod-interop':{'prod-interop-coll', 'prod-pn-coll'}}",
@@ -67,6 +69,7 @@ import static org.mockito.Mockito.*;
         "kafka-manager.onboarding-interceptor.security-protocol=PLAINTEXT"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Profile("KafkaInterceptor")
 class KafkaInterceptorTest {
     @SpyBean
     private KafkaInterceptor interceptor;
@@ -103,42 +106,46 @@ class KafkaInterceptorTest {
     }
 
 
-    @BeforeAll
+    @BeforeEach
     void setUp() {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, InstitutionOnboardedNotification>(configs, new StringSerializer(), new InstitutionOnboardingNotificationSerializer()).createProducer();
+        reset(interceptor, apiConnector, pendingOnboardingConnector);
     }
 
     @Test
     void interceptKafkaMessage_Ok() throws ExecutionException, InterruptedException {
         //given
-        InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
-        notificationMock.setProduct("prod-interop");
-        producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-interop");
+
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
         productMockInterop.setId("prod-interop-coll");
         Product productMockPn = returnProductMock();
         productMockPn.setId("prod-pn-coll");
-
-        when(apiConnector.getInstitutionById(anyString()))
-                .thenReturn(institutionMock);
-        when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
-                .thenReturn(List.of(userMock));
-        when(apiConnector.getProduct(anyString()))
-                .thenReturn(productMockInterop)
-                .thenReturn(productMockPn);
-
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        doReturn(productMockInterop)
+                .doReturn(productMockPn)
+                .when(apiConnector)
+                .getProduct(anyString());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
+        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(apiConnector, times(1)).getProduct(productMockInterop.getId());
         verify(apiConnector, times(1)).getProduct(productMockPn.getId());
-        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationMock.getInstitution().getTaxCode()), eq(productMockInterop.getId()), requestArgumentCaptor.capture());
+        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(productMockInterop.getId()), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         checkNotNullFields(request1.getPspData());
@@ -148,107 +155,146 @@ class KafkaInterceptorTest {
         checkNotNullFields(request1.getBillingData());
         verifyNoInteractions(pendingOnboardingConnector);
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationMock, capturedNotification);
+        assertEquals(notificationPayload, capturedNotification);
+    }
+
+    @Test
+    void interceptKafkaMessage_productNotFound() {
+        //given
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-interop");
+        Institution institutionMock = returnIntitutionMock();
+        User userMock = returnUserMock(1);
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(any(), any());
+        when(apiConnector.getProduct(any()))
+                .thenThrow(RuntimeException.class);
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
+        //then
+        verify(interceptor, timeout(2000).times(1))
+                .intercept(notificationArgumentCaptor.capture());
+        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
+        verify(apiConnector, times(1)).getProduct("prod-interop-coll");
+        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        assertEquals(notificationPayload, capturedNotification);
+        verify(pendingOnboardingConnector, timeout(4000).times(1))
+                .insert(pendingRequestCaptor.capture());
+        verifyNoMoreInteractions(apiConnector);
+        PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
+        assertEquals(captured.getNotification(), capturedNotification);
+        checkNotNullFields(captured.getRequest());
+        assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
     }
 
     @Test
     void interceptKafkaMessage_KoProductStatus() throws ExecutionException, InterruptedException {
         //given
-        InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
-        notificationMock.setProduct("prod-interop");
-        producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-interop");
+
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         Product productMockInterop = returnProductMock();
         productMockInterop.setId("prod-interop-coll");
         productMockInterop.setStatus(ProductStatus.INACTIVE);
-        Product productMockPn = returnProductMock();
-        productMockPn.setId("prod-pn-coll");
-        productMockPn.setStatus(ProductStatus.INACTIVE);
-
-        when(apiConnector.getInstitutionById(anyString()))
-                .thenReturn(institutionMock);
-        when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
-                .thenReturn(List.of(userMock));
-        when(apiConnector.getProduct(anyString()))
-                .thenReturn(productMockInterop)
-                .thenReturn(productMockPn);
-
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        doReturn(productMockInterop)
+                .when(apiConnector)
+                .getProduct(anyString());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
+        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(apiConnector, times(1)).getProduct(productMockInterop.getId());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationMock, capturedNotification);
-        verify(pendingOnboardingConnector, times(1))
+        assertEquals(notificationPayload, capturedNotification);
+        verify(pendingOnboardingConnector, timeout(4000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
         assertEquals(captured.getNotification(), capturedNotification);
         checkNotNullFields(captured.getRequest());
         assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
-    }
 
+    }
 
     @Test
     void interceptKafkaMessage_KoOnboardingFailed() throws ExecutionException, InterruptedException {
         //given
-        InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
-        notificationMock.setProduct("prod-interop");
-        producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-io");
+
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
 
-        when(apiConnector.getInstitutionById(anyString()))
-                .thenReturn(institutionMock);
-        when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
-                .thenReturn(List.of(userMock));
-
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
         //then
-        verify(interceptor, timeout(1000).times(1))
+        verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
+        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationMock, capturedNotification);
-        verify(pendingOnboardingConnector, times(1))
+        assertEquals(notificationPayload, capturedNotification);
+        verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
         assertEquals(captured.getNotification(), capturedNotification);
         checkNotNullFields(captured.getRequest());
-        assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
+        assertEquals(OnboardingFailedException.class.getSimpleName(), captured.getOnboardingFailure());
     }
 
     @Test
     void interceptTestOnboarding() throws ExecutionException, InterruptedException {
         //given
-        InstitutionOnboardedNotification notificationMock = returnNotificationMock(0);
-        notificationMock.setProduct("prod-io-coll");
-        producer.send(new ProducerRecord<>("sc-contracts", notificationMock));
-        producer.flush();
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-io-coll");
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
-        when(apiConnector.getInstitutionById(anyString()))
-                .thenReturn(institutionMock);
-        when(apiConnector.getInstitutionProductUsers(anyString(), anyString()))
-                .thenReturn(List.of(userMock));
-        when(pendingOnboardingConnector.insert(any(PendingOnboardingNotificationOperations.class)))
-                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, PendingOnboardingNotificationOperations.class));
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
         //then
-        verify(interceptor, timeout(5000).times(1))
+        verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationMock, capturedNotification);
+        assertEquals(notificationPayload, capturedNotification);
 
-        verify(apiConnector, times(1)).getInstitutionById(notificationMock.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationMock.getInternalIstitutionID(), notificationMock.getProduct());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verifyNoMoreInteractions(apiConnector);
         verifyNoInteractions(pendingOnboardingConnector);
+
     }
 
     @Test
@@ -272,7 +318,7 @@ class KafkaInterceptorTest {
         assertEquals(institution.getAssistanceContacts(), request.getAssistanceContacts());
     }
 
-    @AfterAll
+    @AfterEach
     void shutdown() {
         producer.close();
     }

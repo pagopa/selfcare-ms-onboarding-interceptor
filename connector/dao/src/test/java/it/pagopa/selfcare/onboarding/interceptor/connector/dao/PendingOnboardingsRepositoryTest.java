@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
@@ -43,13 +44,21 @@ class PendingOnboardingsRepositoryTest {
     void create() {
         //given
         Instant now = Instant.now().minusSeconds(1);
-        int bias = 0;
         PendingOnboardingEntity entity = returnMock(1);
         //when
         PendingOnboardingEntity savedEntity = repository.insert(entity);
         //then
         assertTrue(now.isBefore(savedEntity.getCreatedAt()));
         assertEquals(entity.getId(), savedEntity.getId());
+    }
+
+    @Test
+    void findAll_noPendingOnboardings() {
+        // given
+        // when
+        List<PendingOnboardingEntity> products = repository.findAll();
+        // then
+        assertTrue(products.isEmpty());
     }
 
     @Test
@@ -82,6 +91,65 @@ class PendingOnboardingsRepositoryTest {
         assertNotEquals(savedEntity.getNotification(), modifiedEntity.getNotification());
         assertNotEquals(savedEntity.getOnboardingFailure(), modifiedEntity.getOnboardingFailure());
         assertTrue(savedEntity.getModifiedAt().isBefore(modifiedEntity.getModifiedAt()));
+    }
+
+    @Test
+    void deleteById() {
+        // given
+        PendingOnboardingEntity pendingOnboardingEntity = mockInstance(new PendingOnboardingEntity(), "setId");
+        PendingOnboardingEntity savedPendingOnboardingEntity = repository.save(pendingOnboardingEntity);
+        // when
+        repository.deleteById(savedPendingOnboardingEntity.getId());
+        // then
+        Optional<PendingOnboardingEntity> foundProduct = repository.findById(savedPendingOnboardingEntity.getId());
+        assertFalse(foundProduct.isPresent());
+    }
+
+
+    @Test
+    void findById_found() {
+        // given
+        PendingOnboardingEntity pendingOnboardingEntity = returnMock(1);
+        repository.save(pendingOnboardingEntity);
+        // when
+        Optional<PendingOnboardingEntity> result = repository.findById(pendingOnboardingEntity.getId());
+        // then
+        assertTrue(result.isPresent());
+    }
+
+    @Test
+    void findById_notFound() {
+        // given
+        String pendingOnboardingEntityId = "notFoundId";
+        PendingOnboardingEntity pendingOnboardingEntity = returnMock(1);
+        repository.save(pendingOnboardingEntity);
+        // when
+        Optional<PendingOnboardingEntity> result = repository.findById(pendingOnboardingEntityId);
+        // then
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void existsById_found() {
+        // given
+        PendingOnboardingEntity pendingOnboardingEntity = returnMock(1);
+        repository.save(pendingOnboardingEntity);
+        // when
+        boolean result = repository.existsById(pendingOnboardingEntity.getId());
+        // then
+        assertTrue(result);
+    }
+
+    @Test
+    void existsById_notFound() {
+        // given
+        String pendingOnboardingEntityId = "notFoundId";
+        PendingOnboardingEntity pendingOnboardingEntity = returnMock(1);
+        repository.save(pendingOnboardingEntity);
+        // when
+        boolean result = repository.existsById(pendingOnboardingEntityId);
+        // then
+        assertFalse(result);
     }
 
     private PendingOnboardingEntity returnMock(int bias) {
