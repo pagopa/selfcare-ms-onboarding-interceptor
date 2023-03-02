@@ -112,13 +112,14 @@ class KafkaInterceptorTest {
 
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InterruptedException {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, InstitutionOnboardedNotification>(configs, new StringSerializer(), new InstitutionOnboardingNotificationSerializer()).createProducer();
         reset(interceptor, apiConnector, pendingOnboardingConnector);
+        Thread.sleep(1000);
     }
 
-    @Test
+    @Test()
     void interceptKafkaMessage_Ok() throws ExecutionException, InterruptedException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
@@ -185,10 +186,10 @@ class KafkaInterceptorTest {
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
         assertEquals(notificationPayload, capturedNotification);
-        verify(pendingOnboardingConnector, timeout(4000).times(1))
+        verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();

@@ -32,7 +32,7 @@ public class PendingOnboardingConnectorImplTest {
     public PendingOnboardingConnectorImplTest() {
         this.repositoryMock = Mockito.mock(PendingOnboardingsRepository.class);
         this.mongoTemplateMock = Mockito.mock(MongoTemplate.class);
-        this.pendingOnboardingConnector = new PendingOnboardingConnectorImpl(repositoryMock);
+        this.pendingOnboardingConnector = new PendingOnboardingConnectorImpl(repositoryMock, mongoTemplateMock);
     }
 
     @AfterEach
