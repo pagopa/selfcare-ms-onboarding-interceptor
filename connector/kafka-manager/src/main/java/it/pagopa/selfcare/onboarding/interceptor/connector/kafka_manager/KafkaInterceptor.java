@@ -12,7 +12,6 @@ import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarde
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -45,6 +44,7 @@ public class KafkaInterceptor {
         billings.setTaxCode(institution.getTaxCode());
         request.setBillingData(billings);
         request.setPspData(institution.getPaymentServiceProvider());
+        request.getPspData().setDpoData(institution.getDataProtectionOfficer());
         request.setAssistanceContacts(institution.getAssistanceContacts());
         request.setCompanyInformations(institution.getCompanyInformations());
         return request;
@@ -52,7 +52,7 @@ public class KafkaInterceptor {
 
     @Autowired
     public KafkaInterceptor(@Value("#{${onboarding-interceptor.products-allowed-list}}") Map<String, Set<String>> institutionProductsAllowedMap,
-                            @Qualifier("onboardingValidationStrategyKafka") OnboardingValidationStrategy onboardingValidator,
+                            OnboardingValidationStrategy onboardingValidator,
                             InternalApiConnector internalApiConnector,
                             PendingOnboardingConnector pendingOnboardingConnector) {
         this.onboardingValidator = onboardingValidator;

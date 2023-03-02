@@ -31,9 +31,9 @@ public class ScheduledOnboardingServiceImpl implements ScheduledOnboardingServic
     @Autowired
     public ScheduledOnboardingServiceImpl(PendingOnboardingConnector pendingOnboardingConnector,
                                           InternalApiConnector internalApiConnector,
-                                          @Qualifier("onboardingValidationStrategyCore") OnboardingValidationStrategy onboardingValidator,
+                                          OnboardingValidationStrategy onboardingValidator,
                                           @Value("#{${onboarding-interceptor.products-allowed-list}}")
-                                          Map<String, Set<String>> institutionProductsAllowedMap) {
+                                              Map<String, Set<String>> institutionProductsAllowedMap) {
         log.info("Initializing {}...", ScheduledOnboardingServiceImpl.class.getSimpleName());
         this.onboardingValidator = onboardingValidator;
         this.institutionProductsAllowedMap = Optional.ofNullable(institutionProductsAllowedMap);
@@ -48,7 +48,7 @@ public class ScheduledOnboardingServiceImpl implements ScheduledOnboardingServic
         log.trace("ScheduledOnboardingServiceImpl retry start");
         PendingOnboardingNotificationOperations oldest = pendingOnboardingConnector.findOldest();
         try {
-            if (onboardingValidator.validate(oldest.getNotification(), institutionProductsAllowedMap)) {
+            if (oldest != null && onboardingValidator.validate(oldest.getNotification(), institutionProductsAllowedMap)) {
                 for (String productId : institutionProductsAllowedMap.get().get(oldest.getNotification().getProduct())) {
                     internalApiConnector.autoApprovalOnboarding(oldest.getNotification().getInstitution().getTaxCode(),
                             productId,

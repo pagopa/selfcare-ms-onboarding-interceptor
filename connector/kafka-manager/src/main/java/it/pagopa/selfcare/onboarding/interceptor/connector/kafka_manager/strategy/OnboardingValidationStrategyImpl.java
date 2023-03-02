@@ -1,4 +1,4 @@
-package it.pagopa.selfcare.onboarding.interceptor.core.strategy;
+package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.strategy;
 
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
@@ -7,8 +7,6 @@ import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavail
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -19,14 +17,12 @@ import static it.pagopa.selfcare.onboarding.interceptor.model.product.ProductSta
 
 @Service
 @Slf4j
-@Qualifier("core")
-public class OnboardingValidationStrategyCoreImpl implements OnboardingValidationStrategy {
+public class OnboardingValidationStrategyImpl implements OnboardingValidationStrategy {
     private static final String TESTING_PRODUCT_SUFFIX = "coll";
     private final InternalApiConnector internalApiConnector;
 
-    @Autowired
-    public OnboardingValidationStrategyCoreImpl(InternalApiConnector internalApiConnector) {
-        log.info("Initializing {}...", OnboardingValidationStrategyCoreImpl.class.getSimpleName());
+    public OnboardingValidationStrategyImpl(InternalApiConnector internalApiConnector) {
+        log.info("Initializing {}...", OnboardingValidationStrategyImpl.class.getSimpleName());
         this.internalApiConnector = internalApiConnector;
     }
 
@@ -55,4 +51,3 @@ public class OnboardingValidationStrategyCoreImpl implements OnboardingValidatio
         return true;
     }
 }
-

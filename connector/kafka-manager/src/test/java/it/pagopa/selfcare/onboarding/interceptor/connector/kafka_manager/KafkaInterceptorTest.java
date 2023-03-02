@@ -13,6 +13,7 @@ import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrateg
 import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.InstitutionOnboardingNotificationSerializer;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.KafkaConsumerConfig;
+import it.pagopa.selfcare.onboarding.interceptor.exception.InstitutionAlreadyOnboardedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
@@ -46,7 +47,6 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
@@ -120,7 +120,7 @@ class KafkaInterceptorTest {
     }
 
     @Test()
-    void interceptKafkaMessage_Ok() throws ExecutionException, InterruptedException {
+    void interceptKafkaMessage_Ok() {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
@@ -162,7 +162,7 @@ class KafkaInterceptorTest {
     }
 
     @Test
-    void interceptKafkaMessage_KoProduct() throws ExecutionException, InterruptedException {
+    void interceptKafkaMessage_KoProduct() {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
@@ -200,7 +200,7 @@ class KafkaInterceptorTest {
     }
 
     @Test
-    void interceptKafkaMessage_KoOnboardingFailed() throws ExecutionException, InterruptedException {
+    void interceptKafkaMessage_KoOnboardingFailed() {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-io");
@@ -238,7 +238,7 @@ class KafkaInterceptorTest {
     }
 
     @Test
-    void interceptTestOnboarding() throws ExecutionException, InterruptedException {
+    void interceptTestOnboarding() {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-io-coll");
@@ -271,6 +271,46 @@ class KafkaInterceptorTest {
     }
 
     @Test
+    void intercept_AlreadyOnboardedInstitutionException() {
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-interop");
+        String prodInteropCollId = "prod-interop-coll";
+        Institution institutionMock = returnIntitutionMock();
+        User userMock = returnUserMock(1);
+
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        doReturn(true)
+                .when(validationStrategy)
+                .validate(any(), any());
+        doThrow(InstitutionAlreadyOnboardedException.class)
+                .when(apiConnector)
+                .autoApprovalOnboarding(anyString(), any(), any());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.flush();
+        //then
+        verify(interceptor, timeout(5000).times(1))
+                .intercept(notificationArgumentCaptor.capture());
+        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        assertEquals(notificationPayload, capturedNotification);
+
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
+        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
+        AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
+        assertNotNull(request1);
+        verifyNoMoreInteractions(apiConnector);
+        verifyNoMoreInteractions(validationStrategy);
+        verifyNoInteractions(pendingOnboardingConnector);
+    }
+
+    @Test
     void onboardingNotificationToAutoOnboardingRequest() throws IOException {
         //given
         File stub = ResourceUtils.getFile("classpath:stubs/KafkaInterceptorTest/Institution.json");
@@ -289,6 +329,7 @@ class KafkaInterceptorTest {
         assertEquals(institution.getPaymentServiceProvider(), request.getPspData());
         assertEquals(institution.getCompanyInformations(), request.getCompanyInformations());
         assertEquals(institution.getAssistanceContacts(), request.getAssistanceContacts());
+        assertEquals(institution.getDataProtectionOfficer(), request.getPspData().getDpoData());
     }
 
     @AfterEach
@@ -311,9 +352,11 @@ class KafkaInterceptorTest {
         institutionMock.setAttributes(List.of(mockInstance(new Attribute())));
         institutionMock.setGeographicTaxonomies(List.of(mockInstance(new GeographicTaxonomy())));
         institutionMock.setCompanyInformations(mockInstance(new CompanyInformations()));
-        institutionMock.setDataProtectionOfficer(mockInstance(new DpoData()));
+        DpoData dpo = mockInstance(new DpoData());
+        institutionMock.setDataProtectionOfficer(dpo);
         institutionMock.setAssistanceContacts(mockInstance(new AssistanceContacts()));
         institutionMock.setPaymentServiceProvider(mockInstance(new PspData()));
+        institutionMock.getPaymentServiceProvider().setDpoData(dpo);
         return institutionMock;
     }
 

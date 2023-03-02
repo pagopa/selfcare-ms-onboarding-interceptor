@@ -1,10 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.core.config;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
-import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
-import it.pagopa.selfcare.onboarding.interceptor.core.strategy.OnboardingValidationStrategyCoreImpl;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -27,10 +23,5 @@ public class ScheduledConfig implements SchedulingConfigurer {
         taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
         taskScheduler.initialize();
         taskRegistrar.setTaskScheduler(taskScheduler);
-    }
-
-    @Bean
-    OnboardingValidationStrategy onboardingValidationStrategyCore(InternalApiConnector apiConnector) {
-        return new OnboardingValidationStrategyCoreImpl(apiConnector);
     }
 }

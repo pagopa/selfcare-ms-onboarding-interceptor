@@ -1,8 +1,5 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config;
 
-import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
-import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
-import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.strategy.OnboardingValidationStrategyKafkaImpl;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -88,11 +85,6 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(onboardedInstitutionConsumerFactory());
         factory.setConcurrency(consumerConcurrency);
         return factory;
-    }
-
-    @Bean
-    OnboardingValidationStrategy onboardingValidationStrategyKafka(InternalApiConnector apiConnector) {
-        return new OnboardingValidationStrategyKafkaImpl(apiConnector);
     }
 
 }
