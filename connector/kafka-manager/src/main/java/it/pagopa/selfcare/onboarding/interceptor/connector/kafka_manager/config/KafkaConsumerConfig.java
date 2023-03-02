@@ -1,5 +1,8 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config;
 
+import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
+import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
+import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.strategy.OnboardingValidationStrategyKafkaImpl;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -60,7 +63,7 @@ public class KafkaConsumerConfig {
         log.trace("Initializing {}", KafkaConsumerConfig.class.getSimpleName());
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId + System.currentTimeMillis());
         props.put(ConsumerConfig.CLIENT_ID_CONFIG, clientId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -85,6 +88,11 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(onboardedInstitutionConsumerFactory());
         factory.setConcurrency(consumerConcurrency);
         return factory;
+    }
+
+    @Bean
+    OnboardingValidationStrategy onboardingValidationStrategyKafka(InternalApiConnector apiConnector) {
+        return new OnboardingValidationStrategyKafkaImpl(apiConnector);
     }
 
 }

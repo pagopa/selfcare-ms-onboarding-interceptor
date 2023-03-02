@@ -6,6 +6,11 @@ import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboard
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,10 +24,13 @@ import java.util.function.Function;
 public class PendingOnboardingConnectorImpl implements PendingOnboardingConnector {
 
     private final PendingOnboardingsRepository repository;
+    private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public PendingOnboardingConnectorImpl(PendingOnboardingsRepository repository) {
+    public PendingOnboardingConnectorImpl(PendingOnboardingsRepository repository,
+                                          MongoTemplate mongoTemplate) {
         this.repository = repository;
+        this.mongoTemplate = mongoTemplate;
     }
 
 
@@ -67,6 +75,21 @@ public class PendingOnboardingConnectorImpl implements PendingOnboardingConnecto
     @Override
     public List<PendingOnboardingNotificationOperations> findAll() {
         return new ArrayList<>(repository.findAll());
+    }
+
+    @Override
+    public PendingOnboardingNotificationOperations findOldest() {
+        log.trace("PendingOnboardingNotificationOperations findOldest start");
+        Query query = new Query();
+        query.limit(1);
+        query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
+        query.addCriteria(Criteria.where("notification.product").is("prod-pn"));
+        PendingOnboardingEntity pendingOnboarding = mongoTemplate.findAndModify(query,
+                Update.update(PendingOnboardingEntity.Fields.createdAt, Instant.now()),
+                PendingOnboardingEntity.class);
+        log.debug("PendingOnboardingNotificationOperations findOldest result = {}", pendingOnboarding);
+        log.trace("PendingOnboardingNotificationOperations findOldest end");
+        return pendingOnboarding;
     }
 
 
