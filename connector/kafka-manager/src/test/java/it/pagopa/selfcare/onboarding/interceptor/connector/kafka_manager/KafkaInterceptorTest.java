@@ -241,7 +241,6 @@ class KafkaInterceptorTest {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-io-coll");
-        String prodInteropCollId = "prod-interop-coll";
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
         doReturn(institutionMock)

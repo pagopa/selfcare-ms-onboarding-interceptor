@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -62,7 +63,7 @@ public class KafkaInterceptor {
         this.internalApiConnector = internalApiConnector;
     }
 
-    //    @KafkaListener(topics = "${kafka-manager.onboarding-interceptor.topic}")
+    @KafkaListener(topics = "${kafka-manager.onboarding-interceptor.topic}")
     public void intercept(InstitutionOnboardedNotification message) {
         log.trace("KafkaInterceptor intercept start");
         log.debug("KafkaInterceptor Incoming message: {}", message);
