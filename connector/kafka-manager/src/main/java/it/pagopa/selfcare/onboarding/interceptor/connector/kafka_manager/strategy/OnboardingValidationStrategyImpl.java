@@ -3,6 +3,7 @@ package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.strate
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
+import it.pagopa.selfcare.onboarding.interceptor.exception.ResourceNotFoundException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
@@ -39,9 +40,9 @@ public class OnboardingValidationStrategyImpl implements OnboardingValidationStr
                         log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled. Product status is: {}", productId, product.getStatus());
                         throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer available", productId));
                     }
-                } catch (RuntimeException e) {
-                    log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled. Reason: {}}", productId, e.getMessage());
-                    throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer available, error: %s", productId, e.getMessage()));
+                } catch (ResourceNotFoundException e) {
+                    log.error("[ProductStatus - Error]Product {} no longer in TESTING, onboarding not enabled. Reason: {}}", productId, e.getCause());
+                    throw new TestingProductUnavailableException(String.format("[ProductStatus - Error] Product %s no longer available, error: NotFound", productId));
                 }
             }
         } else {
