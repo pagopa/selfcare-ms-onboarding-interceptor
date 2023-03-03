@@ -59,6 +59,7 @@ public class ScheduledOnboardingServiceImpl implements ScheduledOnboardingServic
             }
         } catch (TestingProductUnavailableException | OnboardingFailedException e) {
             oldest.setOnboardingFailure(e.getClass().getSimpleName());
+            pendingOnboardingConnector.insert(oldest);
         } catch (InstitutionAlreadyOnboardedException e) {
             log.warn("[Already onboarded to Testing product] This institution {} has already onboarded the testing product of {}",
                     oldest.getNotification().getInstitution().getDescription(),
