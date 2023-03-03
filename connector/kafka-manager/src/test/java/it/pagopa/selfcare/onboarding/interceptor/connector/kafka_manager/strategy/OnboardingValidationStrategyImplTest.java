@@ -96,6 +96,18 @@ class OnboardingValidationStrategyImplTest {
     }
 
     @Test
+    void validate_productMapNotPresent() {
+        //given
+        InstitutionOnboardedNotification message = mockInstance(new InstitutionOnboardedNotification());
+        //when
+        Executable executable = () -> validationStrategy.validate(message, Optional.empty());
+        //then
+        OnboardingFailedException exception = assertThrows(OnboardingFailedException.class, executable);
+        assertEquals(String.format("[Test - Onboarding - Error]No Testing products available for %s, onboarding-request = %s", message.getProduct(), message), exception.getMessage());
+        verifyNoInteractions(internalApiConnector);
+    }
+
+    @Test
     void validate_ProductNotFound() {
         //given
         InstitutionOnboardedNotification message = mockInstance(new InstitutionOnboardedNotification());
