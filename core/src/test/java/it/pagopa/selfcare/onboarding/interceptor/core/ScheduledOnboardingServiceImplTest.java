@@ -160,6 +160,9 @@ class ScheduledOnboardingServiceImplTest {
         notification.setInstitution(mockInstance(new InstitutionOnboarded()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
+        doReturn(oldest)
+                .when(pendingOnboardingConnector)
+                .findOldest();
         doReturn(false)
                 .when(validationStrategy)
                 .validate(any(), any());

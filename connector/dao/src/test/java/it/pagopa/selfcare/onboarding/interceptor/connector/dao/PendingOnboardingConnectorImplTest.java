@@ -9,12 +9,16 @@ import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboard
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -172,6 +176,29 @@ public class PendingOnboardingConnectorImplTest {
         verify(repositoryMock, times(1))
                 .deleteById(id);
         verifyNoMoreInteractions(repositoryMock);
+    }
+
+    @Test
+    void findOldest() {
+        //given
+        PendingOnboardingEntity pendingOnboarding = mockInstance(new PendingOnboardingEntity());
+        when(mongoTemplateMock.findAndModify(any(Query.class), any(Update.class), (Class<PendingOnboardingEntity>) any()))
+                .thenReturn(pendingOnboarding);
+        //when
+        PendingOnboardingNotificationOperations oldest = pendingOnboardingConnector.findOldest();
+        //then
+        assertEquals(pendingOnboarding, oldest);
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor.forClass(Query.class);
+        ArgumentCaptor<Update> updateCaptor = ArgumentCaptor.forClass(Update.class);
+        verify(mongoTemplateMock, times(1))
+                .findAndModify(queryCaptor.capture(), updateCaptor.capture(), (Class<?>) any());
+        Query query = queryCaptor.getValue();
+        Update update = updateCaptor.getValue();
+        Map<String, Object> set = (Map<String, Object>) update.getUpdateObject().get("$set");
+        assertTrue(query.getQueryObject().containsKey("notification.product"));
+        assertEquals("prod-interop", query.getQueryObject().get("notification.product"));
+        assertTrue(query.isSorted());
+        assertTrue(query.getSortObject().containsKey("createdAt"));
     }
 
     private PendingOnboardingEntity returnMock(int bias) {
