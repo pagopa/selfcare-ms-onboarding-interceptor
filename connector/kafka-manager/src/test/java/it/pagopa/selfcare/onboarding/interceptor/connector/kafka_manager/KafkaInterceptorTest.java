@@ -115,7 +115,7 @@ class KafkaInterceptorTest {
     void setUp() throws InterruptedException {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, InstitutionOnboardedNotification>(configs, new StringSerializer(), new InstitutionOnboardingNotificationSerializer()).createProducer();
-        reset(interceptor, apiConnector, pendingOnboardingConnector);
+        reset(interceptor, apiConnector, pendingOnboardingConnector, validationStrategy);
         Thread.sleep(1000);
     }
 
@@ -143,10 +143,10 @@ class KafkaInterceptorTest {
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
-        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(apiConnector, timeout(1000).times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         checkNotNullFields(request1.getPspData());
@@ -184,8 +184,8 @@ class KafkaInterceptorTest {
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
         assertEquals(notificationPayload, capturedNotification);
@@ -223,9 +223,9 @@ class KafkaInterceptorTest {
         //then
         verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
-        verify(apiConnector, times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
+        verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
+        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
         assertEquals(notificationPayload, capturedNotification);
         verify(pendingOnboardingConnector, timeout(2000).times(1))
