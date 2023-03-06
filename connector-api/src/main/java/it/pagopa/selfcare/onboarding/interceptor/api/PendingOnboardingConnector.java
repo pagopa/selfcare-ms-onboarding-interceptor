@@ -17,4 +17,7 @@ public interface PendingOnboardingConnector {
     Optional<PendingOnboardingNotificationOperations> findById(String id);
 
     List<PendingOnboardingNotificationOperations> findAll();
+
+    PendingOnboardingNotificationOperations findOldest();
+
 }
