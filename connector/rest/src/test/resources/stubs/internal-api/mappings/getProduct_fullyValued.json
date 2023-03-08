@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/external/internal/v1/products/productId1"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "id": "exampleId",
+      "title": "exampleTitle",
+      "description": "exampleDsecription",
+      "urlPublic": "https://exampleUrlPublic.com",
+      "urlBO": "https://exampleUrlBO.com",
+      "status": "TESTING"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

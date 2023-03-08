@@ -6,6 +6,7 @@ import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboard
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,6 +18,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
+@FieldNameConstants(onlyExplicitlyIncluded = true)
 @Document("pendingOnboardings")
 public class PendingOnboardingEntity implements PendingOnboardingNotificationOperations, Persistable {
     public PendingOnboardingEntity(PendingOnboardingNotificationOperations entity) {
@@ -32,6 +34,7 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
     @Id
     private String id;
     @CreatedDate
+    @FieldNameConstants.Include
     private Instant createdAt;
 
     @LastModifiedDate
