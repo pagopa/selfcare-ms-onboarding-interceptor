@@ -1,12 +1,16 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.rest.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import feign.FeignException;
 import it.pagopa.selfcare.commons.connector.rest.BaseFeignRestClientTest;
 import it.pagopa.selfcare.commons.connector.rest.RestTestUtils;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.config.InternalApiRestClientTestConfig;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.InstitutionResponse;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.UserResponse;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.GeographicTaxonomy;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.User;
+import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -23,7 +27,7 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 import java.util.List;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestPropertySource(
         locations = "classpath:config/internal-api-rest-client.properties",
@@ -73,7 +77,7 @@ class InternalApiRestClientTest extends BaseFeignRestClientTest {
     }
 
     @Test
-    void autoApprovalOnboarding_fullyNull() {
+    void autoApprovalOnboarding_badRequest() {
         // given
         String institutionId = "institutionId2";
         String productId = "productId2";
@@ -83,7 +87,64 @@ class InternalApiRestClientTest extends BaseFeignRestClientTest {
         // when
         Executable executable = () -> restClient.autoApprovalOnboarding(institutionId, productId, request);
         // then
-        assertDoesNotThrow(executable);
+        assertThrows(FeignException.BadRequest.class, executable);
+    }
+
+    @Test
+    void getInstitutionById_fullyValued() {
+        // given
+        String institutionId = "institutionId1";
+        // when
+        InstitutionResponse response = restClient.getInstitutionById(institutionId);
+        // then
+        assertNotNull(response);
+    }
+
+    @Test
+    void getInstitutionById_fullyNull() {
+        // given
+        String institutionId = "institutionId2";
+        // when
+        InstitutionResponse response = restClient.getInstitutionById(institutionId);
+        // then
+        assertNotNull(response);
+        assertNull(response.getId());
+        assertNull(response.getDescription());
+        assertNull(response.getGeographicTaxonomies());
+        assertNull(response.getPaymentServiceProvider());
+        assertNull(response.getDataProtectionOfficer());
+    }
+
+    @Test
+    void getInstitutionProductUsers_fullyValued() {
+        // given
+        String institutionId = "institutionId1";
+        String productId = "productId1";
+        // when
+        List<UserResponse> userResponse = restClient.getInstitutionProductUsers(institutionId, productId);
+        // then
+        assertFalse(userResponse.isEmpty());
+    }
+
+    @Test
+    void getInstitutionProductUsers_emptyResult() {
+        // given
+        String institutionId = "institutionId2";
+        String productId = "productId2";
+        // when
+        List<UserResponse> userResponse = restClient.getInstitutionProductUsers(institutionId, productId);
+        // then
+        assertTrue(userResponse.isEmpty());
+    }
+
+    @Test
+    void getProduct_fullyValued() {
+        // given
+        String productId = "productId1";
+        // when
+        Product product = restClient.getProduct(productId);
+        // then
+        assertNotNull(product);
     }
 
 }
