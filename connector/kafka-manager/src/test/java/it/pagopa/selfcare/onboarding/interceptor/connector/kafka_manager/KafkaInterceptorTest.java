@@ -50,8 +50,7 @@ import java.util.*;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
 import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -330,6 +329,32 @@ class KafkaInterceptorTest {
         assertEquals(institution.getCompanyInformations(), request.getCompanyInformations());
         assertEquals(institution.getAssistanceContacts(), request.getAssistanceContacts());
         assertEquals(institution.getDataProtectionOfficer(), request.getPspData().getDpoData());
+    }
+
+    @Test
+    void onboardingNotificationToAutoOnbaordingRequest_noPSPData() throws IOException {
+        //given
+        File stub = ResourceUtils.getFile("classpath:stubs/KafkaInterceptorTest/InstitutionNoPsp.json");
+        Institution institution = mapper.readValue(stub, Institution.class);
+        //when
+        AutoApprovalOnboardingRequest request = KafkaInterceptor.ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
+        //then
+        assertEquals(institution.getGeographicTaxonomies(), request.getGeographicTaxonomies());
+        assertEquals(institution.getInstitutionType(), request.getInstitutionType());
+        assertEquals(institution.getOrigin(), request.getOrigin());
+        assertEquals(institution.getAddress(), request.getBillingData().getRegisteredOffice());
+        assertEquals(institution.getDescription(), request.getBillingData().getBusinessName());
+        assertEquals(institution.getDigitalAddress(), request.getBillingData().getDigitalAddress());
+        assertEquals(institution.getTaxCode(), request.getBillingData().getTaxCode());
+        assertEquals(institution.getZipCode(), request.getBillingData().getZipCode());
+        assertEquals(institution.getCompanyInformations(), request.getCompanyInformations());
+        assertEquals(institution.getAssistanceContacts(), request.getAssistanceContacts());
+        assertNull(request.getPspData());
+
+        institution.setGeographicTaxonomies(null);
+
+        request = KafkaInterceptor.ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
+        assertTrue(request.getGeographicTaxonomies().isEmpty());
     }
 
     @AfterEach

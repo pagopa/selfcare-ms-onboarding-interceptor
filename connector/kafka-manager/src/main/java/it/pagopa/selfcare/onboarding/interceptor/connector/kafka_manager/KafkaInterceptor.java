@@ -43,8 +43,10 @@ public class KafkaInterceptor {
         billings.setZipCode(institution.getZipCode());
         billings.setTaxCode(institution.getTaxCode());
         request.setBillingData(billings);
-        request.setPspData(institution.getPaymentServiceProvider());
-        request.getPspData().setDpoData(institution.getDataProtectionOfficer());
+        if (institution.getPaymentServiceProvider() != null) {
+            request.setPspData(institution.getPaymentServiceProvider());
+            request.getPspData().setDpoData(institution.getDataProtectionOfficer());
+        }
         request.setAssistanceContacts(institution.getAssistanceContacts());
         request.setCompanyInformations(institution.getCompanyInformations());
         return request;
