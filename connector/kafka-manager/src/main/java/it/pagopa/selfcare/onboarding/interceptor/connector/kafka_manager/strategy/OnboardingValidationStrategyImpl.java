@@ -29,7 +29,9 @@ public class OnboardingValidationStrategyImpl implements OnboardingValidationStr
 
     @Override
     public boolean validate(InstitutionOnboardedNotification message, Optional<Map<String, Set<String>>> allowedTestingProductMap) {
+        log.trace("validate start");
         if (message.getProduct().contains(TESTING_PRODUCT_SUFFIX)) {
+            log.debug("validate result = {}", false);
             return false;
         }
         if (allowedTestingProductMap.isPresent() && allowedTestingProductMap.get().containsKey(message.getProduct())) {
@@ -49,6 +51,7 @@ public class OnboardingValidationStrategyImpl implements OnboardingValidationStr
             log.error("[Onboarding - Error]No Testing products available for {}, onboarding-request = {}", message.getProduct(), message);
             throw new OnboardingFailedException(String.format("[Test - Onboarding - Error]No Testing products available for %s, onboarding-request = %s", message.getProduct(), message));
         }
+        log.debug("validate result = {}", true);
         return true;
     }
 }
