@@ -1,0 +1,23 @@
+{
+    "address": "string",
+    "attributes": [],
+    "dataProtectionOfficer": {
+        "address": "string",
+        "email": "string",
+        "pec": "string"
+    },
+    "description": "string",
+    "digitalAddress": "string",
+    "externalId": "string",
+    "geographicTaxonomies": [{
+        "code": "058091",
+        "desc": "Roma - Comune"
+    }],
+    "id": "string",
+    "institutionType": "PSP",
+    "origin": "SELC",
+    "originId": "string",
+    "taxCode": "string",
+    "zipCode": "00161",
+    "logo": "string"
+}
