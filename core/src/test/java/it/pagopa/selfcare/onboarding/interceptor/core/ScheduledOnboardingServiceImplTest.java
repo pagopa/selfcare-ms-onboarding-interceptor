@@ -121,6 +121,8 @@ class ScheduledOnboardingServiceImplTest {
                 .findOldest();
         verify(internalApiConnector, timeout(3000).times(1))
                 .autoApprovalOnboarding(oldest.getNotification().getInstitution().getTaxCode(), "prod-interop-coll", oldest.getRequest());
+        verify(pendingOnboardingConnector, timeout(3000).times(1))
+                .deleteById(oldest.getId());
         verifyNoMoreInteractions(pendingOnboardingConnector, internalApiConnector);
     }
 

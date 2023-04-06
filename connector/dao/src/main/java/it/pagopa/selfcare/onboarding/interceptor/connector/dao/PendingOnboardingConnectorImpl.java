@@ -82,7 +82,7 @@ public class PendingOnboardingConnectorImpl implements PendingOnboardingConnecto
         log.trace("PendingOnboardingNotificationOperations findOldest start");
         Query query = new Query();
         query.limit(1);
-        query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
+        query.with(Sort.by(Sort.Direction.ASC, "createdAt"));
         query.addCriteria(Criteria.where("notification.product").is("prod-interop"));
         PendingOnboardingEntity pendingOnboarding = mongoTemplate.findAndModify(query,
                 Update.update(PendingOnboardingEntity.Fields.createdAt, Instant.now()),
