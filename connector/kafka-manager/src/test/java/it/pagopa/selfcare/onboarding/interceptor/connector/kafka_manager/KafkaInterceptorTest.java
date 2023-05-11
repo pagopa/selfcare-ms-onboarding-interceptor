@@ -46,7 +46,6 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.*;
@@ -275,7 +274,6 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
         String prodInteropCollId = "prod-interop-coll";
-        notificationPayload.setUpdatedAt(OffsetDateTime.now());
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
 

@@ -3,8 +3,6 @@ package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
 import lombok.Data;
 
-import java.time.OffsetDateTime;
-
 @Data
 public class InstitutionOnboardedNotification {
 
@@ -19,5 +17,5 @@ public class InstitutionOnboardedNotification {
     private String pricingPlan;
     private InstitutionOnboarded institution;
     private InstitutionOnboardedBilling billing;
-    private OffsetDateTime updatedAt;
+    private String updatedAt;
 }
