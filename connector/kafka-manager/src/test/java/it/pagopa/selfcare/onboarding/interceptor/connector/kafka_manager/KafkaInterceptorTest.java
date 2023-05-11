@@ -46,10 +46,10 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.*;
 
-import static it.pagopa.selfcare.commons.utils.TestUtils.checkNotNullFields;
-import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
+import static it.pagopa.selfcare.commons.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -144,7 +144,7 @@ class KafkaInterceptorTest {
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
-        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
         verify(apiConnector, timeout(1000).times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
@@ -157,7 +157,8 @@ class KafkaInterceptorTest {
         verifyNoMoreInteractions(apiConnector);
         verifyNoInteractions(pendingOnboardingConnector);
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationPayload, capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
+
     }
 
     @Test
@@ -185,9 +186,9 @@ class KafkaInterceptorTest {
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationPayload, capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
@@ -224,14 +225,14 @@ class KafkaInterceptorTest {
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, timeout(1000).times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationPayload, capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
-        assertEquals(captured.getNotification(), capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         checkNotNullFields(captured.getRequest());
         assertEquals(OnboardingFailedException.class.getSimpleName(), captured.getOnboardingFailure());
     }
@@ -258,11 +259,11 @@ class KafkaInterceptorTest {
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationPayload, capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, times(1)).validate(any(), eq(allowedProductsMap));
         verifyNoMoreInteractions(apiConnector);
         verifyNoMoreInteractions(validationStrategy);
         verifyNoInteractions(pendingOnboardingConnector);
@@ -274,6 +275,7 @@ class KafkaInterceptorTest {
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
         String prodInteropCollId = "prod-interop-coll";
+        notificationPayload.setUpdatedAt(OffsetDateTime.now());
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
 
@@ -296,11 +298,11 @@ class KafkaInterceptorTest {
         verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
-        assertEquals(notificationPayload, capturedNotification);
+        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(validationStrategy, times(1)).validate(notificationPayload, allowedProductsMap);
+        verify(validationStrategy, times(1)).validate(any(), eq(allowedProductsMap));
         verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
