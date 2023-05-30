@@ -3,15 +3,16 @@ package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import it.pagopa.selfcare.onboarding.interceptor.api.ExceptionDaoConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
 import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
-import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.InstitutionOnboardingNotificationSerializer;
 import it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config.KafkaConsumerConfig;
 import it.pagopa.selfcare.onboarding.interceptor.exception.InstitutionAlreadyOnboardedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
@@ -22,9 +23,9 @@ import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarde
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,12 +36,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.ResourceUtils;
 
@@ -68,7 +72,26 @@ import static org.mockito.Mockito.*;
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Profile("KafkaInterceptor")
+@ContextConfiguration(classes = {KafkaInterceptorTest.Config.class})
 class KafkaInterceptorTest {
+
+    public static class Config {
+        @Bean
+        @Primary
+        public ObjectMapper objectMapper() {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.registerModule(new Jdk8Module());
+            mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+            mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            mapper.setTimeZone(TimeZone.getDefault());
+            return mapper;
+        }
+    }
     @SpyBean
     private KafkaInterceptor interceptor;
     @MockBean
@@ -76,24 +99,33 @@ class KafkaInterceptorTest {
     @MockBean
     private InternalApiConnector apiConnector;
     @MockBean
+    private ExceptionDaoConnector exceptionDaoConnector;
+    @MockBean
     OnboardingValidationStrategy validationStrategy;
 
     private Optional<Map<String, Set<String>>> allowedProductsMap = Optional.of(Map.of("prod-interop", Set.of("prod-interop-coll")));
 
-    private Producer<String, InstitutionOnboardedNotification> producer;
+    private Producer<String, String> producer;
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
-    private final ObjectMapper mapper;
+    @Autowired
+    private ObjectMapper mapper;
 
     @Captor
-    ArgumentCaptor<InstitutionOnboardedNotification> notificationArgumentCaptor;
+    ArgumentCaptor<ConsumerRecord<String, String>> notificationArgumentCaptor;
 
     @Captor
     ArgumentCaptor<AutoApprovalOnboardingRequest> requestArgumentCaptor;
 
     @Captor
     ArgumentCaptor<PendingOnboardingNotificationOperations> pendingRequestCaptor;
+
+    @Captor
+    ArgumentCaptor<String> recordValueArgumentCaptor;
+
+    @Captor
+    ArgumentCaptor<Exception> exceptionArgumentCaptor;
 
     public KafkaInterceptorTest() {
         mapper = new ObjectMapper();
@@ -112,13 +144,13 @@ class KafkaInterceptorTest {
     @BeforeEach
     void setUp() throws InterruptedException {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
-        producer = new DefaultKafkaProducerFactory<String, InstitutionOnboardedNotification>(configs, new StringSerializer(), new InstitutionOnboardingNotificationSerializer()).createProducer();
+        producer = new DefaultKafkaProducerFactory<String, String>(configs).createProducer();
         reset(interceptor, apiConnector, pendingOnboardingConnector, validationStrategy);
         Thread.sleep(1000);
     }
 
-    @Test()
-    void interceptKafkaMessage_Ok() {
+    @Test
+    void interceptKafkaMessage_Ok() throws JsonProcessingException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
@@ -136,7 +168,7 @@ class KafkaInterceptorTest {
                 .when(validationStrategy)
                 .validate(any(), any());
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notificationPayload)));
         producer.flush();
         //then
         verify(interceptor, timeout(1000).times(1))
@@ -155,13 +187,13 @@ class KafkaInterceptorTest {
         verifyNoMoreInteractions(validationStrategy);
         verifyNoMoreInteractions(apiConnector);
         verifyNoInteractions(pendingOnboardingConnector);
-        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
     }
 
     @Test
-    void interceptKafkaMessage_KoProduct() {
+    void interceptKafkaMessage_KoProduct() throws JsonProcessingException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
@@ -178,7 +210,7 @@ class KafkaInterceptorTest {
                 .when(validationStrategy)
                 .validate(any(), any());
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notificationPayload)));
         producer.flush();
         //then
         verify(interceptor, timeout(1000).times(1))
@@ -186,20 +218,20 @@ class KafkaInterceptorTest {
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
-        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
-        assertEquals(captured.getNotification(), capturedNotification);
+        assertEquals(captured.getNotification(), mapper.readValue(capturedNotification.value(), InstitutionOnboardedNotification.class));
         checkNotNullFields(captured.getRequest());
         assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
 
     }
 
     @Test
-    void interceptKafkaMessage_KoOnboardingFailed() {
+    void interceptKafkaMessage_KoOnboardingFailed() throws JsonProcessingException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-io");
@@ -217,7 +249,7 @@ class KafkaInterceptorTest {
                 .when(validationStrategy)
                 .validate(any(), any());
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notificationPayload)));
         producer.flush();
         //then
         verify(interceptor, timeout(5000).times(1))
@@ -225,19 +257,18 @@ class KafkaInterceptorTest {
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
-        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         verify(pendingOnboardingConnector, timeout(2000).times(1))
                 .insert(pendingRequestCaptor.capture());
         verifyNoMoreInteractions(apiConnector);
         PendingOnboardingNotificationOperations captured = pendingRequestCaptor.getValue();
-        reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
         checkNotNullFields(captured.getRequest());
         assertEquals(OnboardingFailedException.class.getSimpleName(), captured.getOnboardingFailure());
     }
 
     @Test
-    void interceptTestOnboarding() {
+    void interceptTestOnboarding() throws JsonProcessingException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-io-coll");
@@ -252,12 +283,12 @@ class KafkaInterceptorTest {
         when(validationStrategy.validate(any(), any()))
                 .thenReturn(false);
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notificationPayload)));
         producer.flush();
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
@@ -270,7 +301,7 @@ class KafkaInterceptorTest {
     }
 
     @Test
-    void intercept_AlreadyOnboardedInstitutionException() {
+    void intercept_AlreadyOnboardedInstitutionException() throws JsonProcessingException {
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
         notificationPayload.setProduct("prod-interop");
         String prodInteropCollId = "prod-interop-coll";
@@ -290,12 +321,12 @@ class KafkaInterceptorTest {
                 .when(apiConnector)
                 .autoApprovalOnboarding(anyString(), any(), any());
         //when
-        producer.send(new ProducerRecord<>("sc-contracts", notificationPayload));
+        producer.send(new ProducerRecord<>("sc-contracts", mapper.writeValueAsString(notificationPayload)));
         producer.flush();
         //then
         verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        InstitutionOnboardedNotification capturedNotification = notificationArgumentCaptor.getValue();
+        ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
@@ -307,6 +338,37 @@ class KafkaInterceptorTest {
         verifyNoMoreInteractions(apiConnector);
         verifyNoMoreInteractions(validationStrategy);
         verifyNoInteractions(pendingOnboardingConnector);
+    }
+
+    @Test
+    void intercept_serializationException() throws JsonProcessingException {
+        InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
+        notificationPayload.setProduct("prod-interop");
+        String payload = mapper.writeValueAsString(notificationPayload);
+        String newPayload = payload.replace("PA", "TEST");
+        Institution institutionMock = returnIntitutionMock();
+
+        User userMock = returnUserMock(1);
+        doReturn(institutionMock)
+                .when(apiConnector)
+                .getInstitutionById(anyString());
+        doReturn(List.of(userMock))
+                .when(apiConnector)
+                .getInstitutionProductUsers(anyString(), anyString());
+        doThrow(TestingProductUnavailableException.class)
+                .when(validationStrategy)
+                .validate(any(), any());
+        //when
+        producer.send(new ProducerRecord<>("sc-contracts", newPayload));
+        producer.flush();
+        //then
+        verify(interceptor, timeout(1000).times(1))
+                .intercept(notificationArgumentCaptor.capture());
+        verify(exceptionDaoConnector, timeout(1000).times(1)).insert(recordValueArgumentCaptor.capture(), exceptionArgumentCaptor.capture());
+        String capturedRecord = recordValueArgumentCaptor.getValue();
+        assertEquals(newPayload, capturedRecord);
+        verifyNoMoreInteractions(exceptionDaoConnector);
+        verifyNoInteractions(pendingOnboardingConnector, apiConnector, validationStrategy);
     }
 
     @Test
