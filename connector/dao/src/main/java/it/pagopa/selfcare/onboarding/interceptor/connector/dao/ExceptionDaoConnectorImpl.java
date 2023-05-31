@@ -6,10 +6,7 @@ import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.ExceptionOpera
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -45,12 +42,4 @@ public class ExceptionDaoConnectorImpl implements ExceptionDaoConnector {
         return insert;
     }
 
-    @Override
-    public ExceptionOperations save(ExceptionOperations exceptionOperations) {
-        final ExceptionsEntity exceptionsEntity = new ExceptionsEntity(exceptionOperations);
-        if (exceptionsEntity.getCreatedAt() == null){
-            exceptionsEntity.setCreatedAt(LocalDateTime.now());
-        }
-        return repository.save(exceptionsEntity);
-    }
 }

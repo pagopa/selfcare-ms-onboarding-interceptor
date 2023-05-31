@@ -4,7 +4,5 @@ import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.ExceptionOpera
 
 public interface ExceptionDaoConnector {
 
-    ExceptionOperations insert(String record, Exception exception);
-
-    ExceptionOperations save(ExceptionOperations exceptionOperations);
+    ExceptionOperations insert(String payload, Exception exception);
 }

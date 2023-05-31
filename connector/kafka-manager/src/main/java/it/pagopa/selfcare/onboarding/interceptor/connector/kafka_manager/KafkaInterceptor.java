@@ -110,7 +110,7 @@ public class KafkaInterceptor {
             log.warn("[Already onboarded to Testing product] This institution {} has already onboarded the testing product of {}", message.getInternalIstitutionID(), message.getProduct());
         } catch (Exception e) {
             ExceptionOperations insert = exceptionDaoConnector.insert(record.value(), e);
-            log.warn("[Record processing exception]Something went wrong with the record processing: record = {}, exception = {}, cause = {}", record.value(), e.getMessage(), e.getClass());
+            log.warn("[Record processing exception]Something went wrong with the record processing: entity = {}", insert);
         }
         log.trace("KafkaInterceptor intercept end");
     }

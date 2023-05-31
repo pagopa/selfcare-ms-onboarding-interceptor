@@ -50,7 +50,6 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.*;
@@ -146,7 +145,7 @@ class KafkaInterceptorTest {
     void setUp() throws InterruptedException {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, String>(configs).createProducer();
-        reset(interceptor, apiConnector, pendingOnboardingConnector, validationStrategy);
+        reset(interceptor, apiConnector, pendingOnboardingConnector, exceptionDaoConnector, validationStrategy);
         Thread.sleep(1000);
     }
 
