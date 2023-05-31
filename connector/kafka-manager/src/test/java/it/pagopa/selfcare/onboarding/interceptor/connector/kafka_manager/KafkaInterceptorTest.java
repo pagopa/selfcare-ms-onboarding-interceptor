@@ -50,6 +50,7 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 import static it.pagopa.selfcare.commons.utils.TestUtils.*;
@@ -228,6 +229,11 @@ class KafkaInterceptorTest {
         checkNotNullFields(captured.getRequest());
         assertEquals(TestingProductUnavailableException.class.getSimpleName(), captured.getOnboardingFailure());
 
+    }
+
+    @Test
+    void testTimeConversion() throws JsonProcessingException {
+        OffsetDateTime updatedAt = mapper.readValue("2022-10-26T07:58:42.143", OffsetDateTime.class);
     }
 
     @Test

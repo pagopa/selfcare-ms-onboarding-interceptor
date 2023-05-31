@@ -9,7 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -31,8 +31,11 @@ public class ExceptionDaoConnectorImpl implements ExceptionDaoConnector {
         log.debug("insert record value = {}. exception = {}", value, exception);
         ExceptionsEntity insert;
         final ExceptionsEntity entity = new ExceptionsEntity();
+        String id = value.substring(6, 43);
+        entity.setId(id);
         entity.setNotification(value);
         entity.setExceptionDescription(exception.getMessage());
+        entity.setException(exception.getClass().getSimpleName());
         try{
             insert = repository.insert(entity);
             log.debug("saved exception = {}", insert);
@@ -48,7 +51,7 @@ public class ExceptionDaoConnectorImpl implements ExceptionDaoConnector {
     public ExceptionOperations save(ExceptionOperations exceptionOperations) {
         final ExceptionsEntity exceptionsEntity = new ExceptionsEntity(exceptionOperations);
         if (exceptionsEntity.getCreatedAt() == null){
-            exceptionsEntity.setCreatedAt(OffsetDateTime.now());
+            exceptionsEntity.setCreatedAt(LocalDateTime.now());
         }
         return repository.save(exceptionsEntity);
     }

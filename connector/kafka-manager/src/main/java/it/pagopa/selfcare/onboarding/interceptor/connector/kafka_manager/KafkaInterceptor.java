@@ -79,40 +79,38 @@ public class KafkaInterceptor {
         log.trace("KafkaInterceptor intercept start");
         log.debug("KafkaInterceptor Incoming message: {}", record);
         InstitutionOnboardedNotification message = null;
+        AutoApprovalOnboardingRequest request = new AutoApprovalOnboardingRequest();
         try {
             message = objectMapper.readValue(record.value(), InstitutionOnboardedNotification.class);
             final Institution institution = internalApiConnector.getInstitutionById(message.getInternalIstitutionID());
             final List<User> users = internalApiConnector.getInstitutionProductUsers(message.getInternalIstitutionID(), message.getProduct());
-            final AutoApprovalOnboardingRequest request = ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
+             ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
             request.setUsers(users);
             request.getBillingData().setRecipientCode(message.getBilling().getRecipientCode());
             request.getBillingData().setVatNumber(message.getBilling().getVatNumber());
             request.getBillingData().setPublicServices(message.getBilling().isPublicService());
             request.setPricingPlan(message.getPricingPlan());
 
-            try {
-                if (onboardingValidator.validate(message, institutionProductsAllowedMap)) {
-                    for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
-                        internalApiConnector.autoApprovalOnboarding(message.getInstitution().getTaxCode(), productId, request);
-                        log.debug("KafkaInterceptor onboarded request = {}", request);
-                    }
+            if (onboardingValidator.validate(message, institutionProductsAllowedMap)) {
+                for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
+                    internalApiConnector.autoApprovalOnboarding(message.getInstitution().getTaxCode(), productId, request);
+                    log.debug("KafkaInterceptor onboarded request = {}", request);
                 }
-            } catch (TestingProductUnavailableException | OnboardingFailedException e) {
-                PendingOnboardingNotificationOperations pendingOnboarding = new PendingOnboardingNotification();
-                pendingOnboarding.setId(message.getId());
-                pendingOnboarding.setNotification(message);
-                pendingOnboarding.setRequest(request);
-                pendingOnboarding.setOnboardingFailure(e.getClass().getSimpleName());
-                PendingOnboardingNotificationOperations saved = pendingOnboardingConnector.insert(pendingOnboarding);
-                log.debug("Persisted failed onboarding request = {}", saved);
-            } catch (InstitutionAlreadyOnboardedException e) {
-                log.warn("[Already onboarded to Testing product] This institution {} has already onboarded the testing product of {}", message.getInternalIstitutionID(), message.getProduct());
             }
+        } catch (TestingProductUnavailableException | OnboardingFailedException e) {
+            PendingOnboardingNotificationOperations pendingOnboarding = new PendingOnboardingNotification();
+            pendingOnboarding.setId(message.getId());
+            pendingOnboarding.setNotification(message);
+            pendingOnboarding.setRequest(request);
+            pendingOnboarding.setOnboardingFailure(e.getClass().getSimpleName());
+            PendingOnboardingNotificationOperations saved = pendingOnboardingConnector.insert(pendingOnboarding);
+            log.debug("Persisted failed onboarding request = {}", saved);
+        } catch (InstitutionAlreadyOnboardedException e) {
+            log.warn("[Already onboarded to Testing product] This institution {} has already onboarded the testing product of {}", message.getInternalIstitutionID(), message.getProduct());
         } catch (Exception e) {
             ExceptionOperations insert = exceptionDaoConnector.insert(record.value(), e);
             log.warn("[Record processing exception]Something went wrong with the record processing: record = {}, exception = {}, cause = {}", record.value(), e.getMessage(), e.getClass());
         }
-
         log.trace("KafkaInterceptor intercept end");
     }
 
