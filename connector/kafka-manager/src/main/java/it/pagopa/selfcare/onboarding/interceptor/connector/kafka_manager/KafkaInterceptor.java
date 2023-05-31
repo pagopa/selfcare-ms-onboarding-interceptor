@@ -100,7 +100,9 @@ public class KafkaInterceptor {
             }
         } catch (TestingProductUnavailableException | OnboardingFailedException e) {
             PendingOnboardingNotificationOperations pendingOnboarding = new PendingOnboardingNotification();
-            pendingOnboarding.setId(message.getId());
+            if (message != null) {
+                pendingOnboarding.setId(message.getId());
+            }
             pendingOnboarding.setNotification(message);
             pendingOnboarding.setRequest(request);
             pendingOnboarding.setOnboardingFailure(e.getClass().getSimpleName());
