@@ -80,11 +80,12 @@ public class KafkaInterceptor {
         log.debug("KafkaInterceptor Incoming message: {}", record);
         InstitutionOnboardedNotification message = null;
         AutoApprovalOnboardingRequest request = new AutoApprovalOnboardingRequest();
+        request.setUsers(new ArrayList<>());
         try {
             message = objectMapper.readValue(record.value(), InstitutionOnboardedNotification.class);
             final Institution institution = internalApiConnector.getInstitutionById(message.getInternalIstitutionID());
             final List<User> users = internalApiConnector.getInstitutionProductUsers(message.getInternalIstitutionID(), message.getProduct());
-             ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
+            request = ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
             request.setUsers(users);
             request.getBillingData().setRecipientCode(message.getBilling().getRecipientCode());
             request.getBillingData().setVatNumber(message.getBilling().getVatNumber());

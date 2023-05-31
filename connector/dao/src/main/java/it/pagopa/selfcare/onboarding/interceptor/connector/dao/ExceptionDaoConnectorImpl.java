@@ -17,12 +17,10 @@ public class ExceptionDaoConnectorImpl implements ExceptionDaoConnector {
 
     private final ExceptionRepository repository;
 
-    private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public ExceptionDaoConnectorImpl(ExceptionRepository repository, MongoTemplate mongoTemplate) {
+    public ExceptionDaoConnectorImpl(ExceptionRepository repository) {
         this.repository = repository;
-        this.mongoTemplate = mongoTemplate;
     }
 
     @Override

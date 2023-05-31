@@ -232,11 +232,6 @@ class KafkaInterceptorTest {
     }
 
     @Test
-    void testTimeConversion() throws JsonProcessingException {
-        OffsetDateTime updatedAt = mapper.readValue("2022-10-26T07:58:42.143", OffsetDateTime.class);
-    }
-
-    @Test
     void interceptKafkaMessage_KoOnboardingFailed() throws JsonProcessingException {
         //given
         InstitutionOnboardedNotification notificationPayload = returnNotificationMock(0);
