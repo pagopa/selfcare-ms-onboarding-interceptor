@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+
+import java.util.Arrays;
 
 @Slf4j
 @Configuration
@@ -25,5 +28,11 @@ public class DaoConfig {
     public AuditorAware<String> myAuditorProvider() {
         return new SpringSecurityAuditorAware();
     }
-
+    @Bean
+    public MongoCustomConversions customConversions() {
+        return new MongoCustomConversions(Arrays.asList(
+                new OffsetDateTimeToStringConverter(),
+                new StringToOffsetDateTimeConverter()
+        ));
+    }
 }
