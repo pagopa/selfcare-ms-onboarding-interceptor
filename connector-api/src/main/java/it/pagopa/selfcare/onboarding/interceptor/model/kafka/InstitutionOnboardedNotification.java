@@ -17,5 +17,7 @@ public class InstitutionOnboardedNotification {
     private String pricingPlan;
     private InstitutionOnboarded institution;
     private InstitutionOnboardedBilling billing;
-    private String updatedAt;
+    private String  updatedAt;
+    private String createdAt;
+    private String closedAt;
 }

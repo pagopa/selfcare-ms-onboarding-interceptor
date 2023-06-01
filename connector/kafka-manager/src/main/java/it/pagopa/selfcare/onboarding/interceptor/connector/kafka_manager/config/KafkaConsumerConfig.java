@@ -1,6 +1,5 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.config;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,7 +13,6 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +54,7 @@ public class KafkaConsumerConfig {
 
 
     @Bean
-    public ConsumerFactory<String, InstitutionOnboardedNotification> onboardedInstitutionConsumerFactory() {
+    public ConsumerFactory<String, String> onboardedInstitutionConsumerFactory() {
         log.trace("Initializing {}", KafkaConsumerConfig.class.getSimpleName());
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
@@ -74,17 +72,18 @@ public class KafkaConsumerConfig {
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, securityProtocol);
         props.put(SaslConfigs.SASL_MECHANISM, saslMechanism);
         props.put(SaslConfigs.SASL_JAAS_CONFIG, saslConfig);
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(InstitutionOnboardedNotification.class));
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, InstitutionOnboardedNotification>
+    public ConcurrentKafkaListenerContainerFactory<String, String>
     kafkaListenerContainerFactory() {
-        final ConcurrentKafkaListenerContainerFactory<String, InstitutionOnboardedNotification> factory =
+        final ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(onboardedInstitutionConsumerFactory());
         factory.setConcurrency(consumerConcurrency);
         return factory;
     }
+
 
 }
