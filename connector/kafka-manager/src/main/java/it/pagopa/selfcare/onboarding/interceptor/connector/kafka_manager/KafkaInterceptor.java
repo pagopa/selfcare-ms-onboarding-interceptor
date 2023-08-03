@@ -94,7 +94,7 @@ public class KafkaInterceptor {
 
             if (onboardingValidator.validate(message, institutionProductsAllowedMap)) {
                 for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
-                    internalApiConnector.autoApprovalOnboarding(message.getInstitution().getTaxCode(), productId, request);
+                    internalApiConnector.autoApprovalOnboarding(institution.getExternalId(), productId, request);
                     log.debug("KafkaInterceptor onboarded request = {}", request);
                 }
             }

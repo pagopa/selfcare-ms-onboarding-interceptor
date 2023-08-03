@@ -176,7 +176,7 @@ class KafkaInterceptorTest {
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
-        verify(apiConnector, timeout(1000).times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
+        verify(apiConnector, timeout(1000).times(1)).autoApprovalOnboarding(eq(institutionMock.getExternalId()), eq(prodInteropCollId), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         checkNotNullFields(request1.getPspData());
@@ -332,7 +332,7 @@ class KafkaInterceptorTest {
         verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, times(1)).validate(any(), eq(allowedProductsMap));
-        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(notificationPayload.getInstitution().getTaxCode()), eq(prodInteropCollId), requestArgumentCaptor.capture());
+        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(institutionMock.getExternalId()), eq(prodInteropCollId), requestArgumentCaptor.capture());
         AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         verifyNoMoreInteractions(apiConnector);
