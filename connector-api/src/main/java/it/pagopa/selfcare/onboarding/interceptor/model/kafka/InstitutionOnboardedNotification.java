@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
 
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.RootParent;
 import lombok.Data;
 
 @Data
@@ -20,4 +21,7 @@ public class InstitutionOnboardedNotification {
     private String  updatedAt;
     private String createdAt;
     private String closedAt;
+    private String subUnitCode;
+    private String subUnitType;
+    private RootParent rootParent;
 }
