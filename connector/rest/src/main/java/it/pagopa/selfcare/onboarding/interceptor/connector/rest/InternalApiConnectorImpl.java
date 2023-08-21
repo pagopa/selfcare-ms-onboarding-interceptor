@@ -42,6 +42,9 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
         coreInstitution.setPaymentServiceProvider(partyInstitutionResponse.getPaymentServiceProvider());
         coreInstitution.setDataProtectionOfficer(partyInstitutionResponse.getDataProtectionOfficer());
         coreInstitution.setGeographicTaxonomies(partyInstitutionResponse.getGeographicTaxonomies());
+        coreInstitution.setSubUnitCode(partyInstitutionResponse.getSubunitCode());
+        coreInstitution.setSubUnitType(partyInstitutionResponse.getSubunitType());
+        coreInstitution.setRootParent(partyInstitutionResponse.getRootParent());
         CompanyInformations companyInformations = new CompanyInformations();
         companyInformations.setRea(partyInstitutionResponse.getRea());
         companyInformations.setShareCapital(partyInstitutionResponse.getShareCapital());
