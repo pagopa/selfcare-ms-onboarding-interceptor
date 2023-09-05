@@ -75,7 +75,7 @@ public class InternalApiConnectorImpl implements InternalApiConnector {
     @Override
     public void autoApprovalOnboarding(String externalInstitutionId, String productId, AutoApprovalOnboardingRequest request) {
         log.trace("autoApprovalOnboarding start");
-        log.debug("autoApprovalOnboarding externalId = {}, productId = {}, request = {}", externalInstitutionId, productId, request);
+        log.debug(LogUtils.CONFIDENTIAL_MARKER,"autoApprovalOnboarding externalId = {}, productId = {}, request = {}", externalInstitutionId, productId, request);
         Assert.hasText(externalInstitutionId, EXTERNAL_ID_IS_REQUIRED);
         Assert.hasText(productId, PRODUCT_ID_IS_REQUIRED);
         restClient.autoApprovalOnboarding(externalInstitutionId, productId, request);
