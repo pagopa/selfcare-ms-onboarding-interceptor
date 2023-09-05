@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.core;
 
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
 import it.pagopa.selfcare.onboarding.interceptor.api.PendingOnboardingConnector;
@@ -54,7 +55,7 @@ public class ScheduledOnboardingServiceImpl implements ScheduledOnboardingServic
                             productId,
                             oldest.getRequest());
                     pendingOnboardingConnector.deleteById(oldest.getId());
-                    log.debug("KafkaInterceptor onboarded request = {}", oldest);
+                    log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafkaInterceptor onboarded request = {}", oldest);
                 }
             }
         } catch (TestingProductUnavailableException | OnboardingFailedException e) {

@@ -1,6 +1,7 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.selfcare.commons.base.logging.LogUtils;
 import it.pagopa.selfcare.onboarding.interceptor.api.ExceptionDaoConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.InternalApiConnector;
 import it.pagopa.selfcare.onboarding.interceptor.api.OnboardingValidationStrategy;
@@ -95,7 +96,7 @@ public class KafkaInterceptor {
             if (onboardingValidator.validate(message, institutionProductsAllowedMap)) {
                 for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
                     internalApiConnector.autoApprovalOnboarding(institution.getExternalId(), productId, request);
-                    log.debug("KafkaInterceptor onboarded request = {}", request);
+                    log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafkaInterceptor onboarded request = {}", request);
                 }
             }
         } catch (TestingProductUnavailableException | OnboardingFailedException e) {
