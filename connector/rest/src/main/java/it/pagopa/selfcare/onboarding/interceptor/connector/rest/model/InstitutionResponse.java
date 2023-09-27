@@ -1,5 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.rest.model;
 
+import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import lombok.Data;
 
