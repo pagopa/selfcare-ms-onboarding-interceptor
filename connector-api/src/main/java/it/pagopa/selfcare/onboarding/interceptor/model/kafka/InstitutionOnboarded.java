@@ -1,6 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.InstitutionType;
+import it.pagopa.selfcare.commons.base.utils.InstitutionType;
 import lombok.Data;
 
 @Data
