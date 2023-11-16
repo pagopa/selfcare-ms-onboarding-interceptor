@@ -14,5 +14,9 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+pdb:
+  enabled: false
+  minAvailable: 2
+
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.selfcare.pagopa.it"
