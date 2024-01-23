@@ -1,3 +1,5 @@
+replicaCount: 2
+
 image:
   repository: selcdacr.azurecr.io/selfcaremsonboardinginterceptor
 
@@ -14,12 +16,23 @@ ingress:
         - path: /ms-onboarding-interceptor/(.*)
           pathType: ImplementationSpecific
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 500M
+  limits:
+    cpu: 600m
+    memory: 800M
+
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+
+pdb:
+  enabled: true
 
 configEnvSpecific:
   INTERNAL_API_SERVICE_URL: "https://api.dev.selfcare.pagopa.it"
