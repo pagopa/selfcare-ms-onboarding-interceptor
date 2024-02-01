@@ -12,6 +12,7 @@ import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedExcep
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.mapper.OnboardingRequestMapper;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.ExceptionOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,8 @@ public class KafkaInterceptor {
     private final PendingOnboardingConnector pendingOnboardingConnector;
 
     private final ExceptionDaoConnector exceptionDaoConnector;
+
+    private final OnboardingRequestMapper requestMapper;
     @Autowired
     private ObjectMapper objectMapper;
     static final Function<Institution, AutoApprovalOnboardingRequest> ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST = institution -> {
@@ -65,9 +68,10 @@ public class KafkaInterceptor {
     public KafkaInterceptor(@Value("#{${onboarding-interceptor.products-allowed-list}}") Map<String, Set<String>> institutionProductsAllowedMap,
                             OnboardingValidationStrategy onboardingValidator,
                             InternalApiConnector internalApiConnector,
-                            PendingOnboardingConnector pendingOnboardingConnector, ExceptionDaoConnector exceptionDaoConnector) {
+                            PendingOnboardingConnector pendingOnboardingConnector, ExceptionDaoConnector exceptionDaoConnector, OnboardingRequestMapper requestMapper) {
         this.onboardingValidator = onboardingValidator;
         this.exceptionDaoConnector = exceptionDaoConnector;
+        this.requestMapper = requestMapper;
         log.info("Initializing {}...", KafkaInterceptor.class.getSimpleName());
         log.debug("institutionProductsAllowedMap = {}", institutionProductsAllowedMap);
         this.institutionProductsAllowedMap = Optional.ofNullable(institutionProductsAllowedMap);
@@ -80,22 +84,19 @@ public class KafkaInterceptor {
         log.trace("KafkaInterceptor intercept start");
         log.debug("KafkaInterceptor Incoming message: {}", record);
         InstitutionOnboardedNotification message = null;
-        AutoApprovalOnboardingRequest request = new AutoApprovalOnboardingRequest();
+        OnboardingProductRequest request = new OnboardingProductRequest();
         request.setUsers(new ArrayList<>());
+        request.setGeographicTaxonomies(new ArrayList<>());
         try {
             message = objectMapper.readValue(record.value(), InstitutionOnboardedNotification.class);
-            final Institution institution = internalApiConnector.getInstitutionById(message.getInternalIstitutionID());
+            Institution institution = internalApiConnector.getInstitutionById(message.getInternalIstitutionID());
             final List<User> users = internalApiConnector.getInstitutionProductUsers(message.getInternalIstitutionID(), message.getProduct());
-            request = ONBOARDING_NOTIFICATION_TO_AUTO_APPROVAL_REQUEST.apply(institution);
-            request.setUsers(users);
-            request.getBillingData().setRecipientCode(message.getBilling().getRecipientCode());
-            request.getBillingData().setVatNumber(message.getBilling().getVatNumber());
-            request.getBillingData().setPublicServices(message.getBilling().isPublicService());
-            request.setPricingPlan(message.getPricingPlan());
 
+            request = requestMapper.toOnboardingRequest(message, users);
+            request.setGeographicTaxonomies(institution.getGeographicTaxonomies());
             if (onboardingValidator.validate(message, institutionProductsAllowedMap)) {
                 for (String productId : institutionProductsAllowedMap.get().get(message.getProduct())) {
-                    internalApiConnector.autoApprovalOnboarding(institution.getExternalId(), productId, request);
+                    internalApiConnector.onboarding(request);
                     log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafkaInterceptor onboarded request = {}", request);
                 }
             }
@@ -117,6 +118,7 @@ public class KafkaInterceptor {
         }
         log.trace("KafkaInterceptor intercept end");
     }
+
 
 
 }

@@ -9,10 +9,10 @@ import it.pagopa.selfcare.onboarding.interceptor.core.model.DummyPendingOnboardi
 import it.pagopa.selfcare.onboarding.interceptor.exception.InstitutionAlreadyOnboardedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedBilling;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.Billing;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingProductRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionToNotify;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +68,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         doReturn(oldest)
@@ -86,7 +86,7 @@ class ScheduledOnboardingServiceImplTest {
         verify(pendingOnboardingConnector, timeout(3000).times(1))
                 .findOldest();
         verify(internalApiConnector, timeout(3000).times(1))
-                .autoApprovalOnboarding(oldest.getNotification().getInstitution().getTaxCode(), "prod-interop-coll", oldest.getRequest());
+                .onboarding(oldest.getRequest());
         verify(pendingOnboardingConnector, timeout(3000).times(1))
                 .deleteById(oldest.getId());
         verifyNoMoreInteractions(pendingOnboardingConnector, internalApiConnector);
@@ -99,7 +99,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         doReturn(oldest)
@@ -120,7 +120,7 @@ class ScheduledOnboardingServiceImplTest {
         verify(pendingOnboardingConnector, timeout(3000).times(1))
                 .findOldest();
         verify(internalApiConnector, timeout(3000).times(1))
-                .autoApprovalOnboarding(oldest.getNotification().getInstitution().getTaxCode(), "prod-interop-coll", oldest.getRequest());
+                .onboarding(oldest.getRequest());
         verify(pendingOnboardingConnector, timeout(3000).times(1))
                 .deleteById(oldest.getId());
         verifyNoMoreInteractions(pendingOnboardingConnector, internalApiConnector);
@@ -132,7 +132,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         doReturn(true)
@@ -159,7 +159,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         doReturn(oldest)
@@ -189,7 +189,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         oldest.setOnboardingFailure(TestingProductUnavailableException.class.getSimpleName());
@@ -221,7 +221,7 @@ class ScheduledOnboardingServiceImplTest {
         PendingOnboardingNotificationOperations oldest = TestUtils.mockInstance(new DummyPendingOnboardingNotification());
         InstitutionOnboardedNotification notification = returnNotificationMock(1);
         notification.setProduct("prod-interop");
-        notification.setInstitution(mockInstance(new InstitutionOnboarded()));
+        notification.setInstitution(mockInstance(new InstitutionToNotify()));
         oldest.setNotification(notification);
         oldest.setRequest(returnRequestMock());
         oldest.setOnboardingFailure(OnboardingFailedException.class.getSimpleName());
@@ -250,15 +250,15 @@ class ScheduledOnboardingServiceImplTest {
     private InstitutionOnboardedNotification returnNotificationMock(int bias) {
         InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
         notificationMock.setId(UUID.randomUUID().toString());
-        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
-        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
+        InstitutionToNotify institution = mockInstance(new InstitutionToNotify(), bias);
+        Billing billing = mockInstance(new Billing(), bias);
         notificationMock.setBilling(billing);
         notificationMock.setInstitution(institution);
         return notificationMock;
     }
 
-    private AutoApprovalOnboardingRequest returnRequestMock() {
-        AutoApprovalOnboardingRequest request = mockInstance(new AutoApprovalOnboardingRequest());
+    private OnboardingProductRequest returnRequestMock() {
+        OnboardingProductRequest request = mockInstance(new OnboardingProductRequest());
         return request;
     }
 }

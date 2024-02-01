@@ -1,6 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.kafka_manager.model;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingProductRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import lombok.Data;
@@ -16,7 +16,7 @@ public class PendingOnboardingNotification implements PendingOnboardingNotificat
 
     private Instant modifiedAt;
 
-    private AutoApprovalOnboardingRequest request;
+    private OnboardingProductRequest request;
 
     private InstitutionOnboardedNotification notification;
 

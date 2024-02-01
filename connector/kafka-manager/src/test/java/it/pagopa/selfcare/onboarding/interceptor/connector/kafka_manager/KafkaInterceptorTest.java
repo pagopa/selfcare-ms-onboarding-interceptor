@@ -18,9 +18,10 @@ import it.pagopa.selfcare.onboarding.interceptor.exception.InstitutionAlreadyOnb
 import it.pagopa.selfcare.onboarding.interceptor.exception.OnboardingFailedException;
 import it.pagopa.selfcare.onboarding.interceptor.exception.TestingProductUnavailableException;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedBilling;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionToNotify;
+import it.pagopa.selfcare.onboarding.interceptor.model.mapper.OnboardingRequestMapper;
+import it.pagopa.selfcare.onboarding.interceptor.model.mapper.OnboardingRequestMapperImpl;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -72,7 +74,7 @@ import static org.mockito.Mockito.*;
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Profile("KafkaInterceptor")
-@ContextConfiguration(classes = {KafkaInterceptorTest.Config.class})
+@ContextConfiguration(classes = {KafkaInterceptorTest.Config.class, OnboardingRequestMapperImpl.class})
 class KafkaInterceptorTest {
 
     public static class Config {
@@ -103,6 +105,9 @@ class KafkaInterceptorTest {
     @MockBean
     OnboardingValidationStrategy validationStrategy;
 
+    @Spy
+    private OnboardingRequestMapper onboardingRequestMapper = new OnboardingRequestMapperImpl();
+
     private Optional<Map<String, Set<String>>> allowedProductsMap = Optional.of(Map.of("prod-interop", Set.of("prod-interop-coll")));
 
     private Producer<String, String> producer;
@@ -116,7 +121,7 @@ class KafkaInterceptorTest {
     ArgumentCaptor<ConsumerRecord<String, String>> notificationArgumentCaptor;
 
     @Captor
-    ArgumentCaptor<AutoApprovalOnboardingRequest> requestArgumentCaptor;
+    ArgumentCaptor<OnboardingProductRequest> requestArgumentCaptor;
 
     @Captor
     ArgumentCaptor<PendingOnboardingNotificationOperations> pendingRequestCaptor;
@@ -140,9 +145,11 @@ class KafkaInterceptorTest {
         mapper.setTimeZone(TimeZone.getDefault());
     }
 
-
+    /*TODO:: add mock call to internalApiConnector to retrieve the institution for retrieving geographic taxonomies:
+    when(internalApiConnector.getInstitutionByID(anu)).thenReturn(institutionMock);
+    */
     @BeforeEach
-    void setUp() throws InterruptedException {
+     void setUp() throws InterruptedException {
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.producerProps(embeddedKafkaBroker));
         producer = new DefaultKafkaProducerFactory<String, String>(configs).createProducer();
         reset(interceptor, apiConnector, pendingOnboardingConnector, exceptionDaoConnector, validationStrategy);
@@ -160,7 +167,7 @@ class KafkaInterceptorTest {
         String prodInteropCollId = "prod-interop-coll";
         doReturn(institutionMock)
                 .when(apiConnector)
-                .getInstitutionById(anyString());
+                        .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -174,10 +181,9 @@ class KafkaInterceptorTest {
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
-        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
-        verify(apiConnector, timeout(1000).times(1)).autoApprovalOnboarding(eq(institutionMock.getExternalId()), eq(prodInteropCollId), requestArgumentCaptor.capture());
-        AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
+        verify(apiConnector, timeout(1000).times(1)).onboarding(requestArgumentCaptor.capture());
+        OnboardingProductRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         checkNotNullFields(request1.getPspData());
         checkNotNullFields(request1.getCompanyInformations());
@@ -200,9 +206,6 @@ class KafkaInterceptorTest {
 
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
-        doReturn(institutionMock)
-                .when(apiConnector)
-                .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -215,7 +218,6 @@ class KafkaInterceptorTest {
         //then
         verify(interceptor, timeout(1000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
         ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
@@ -239,9 +241,6 @@ class KafkaInterceptorTest {
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
 
-        doReturn(institutionMock)
-                .when(apiConnector)
-                .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -254,7 +253,6 @@ class KafkaInterceptorTest {
         //then
         verify(interceptor, timeout(5000).times(1))
                 .intercept(notificationArgumentCaptor.capture());
-        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, timeout(1000).times(1)).validate(any(), eq(allowedProductsMap));
         ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
@@ -274,9 +272,6 @@ class KafkaInterceptorTest {
         notificationPayload.setProduct("prod-io-coll");
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
-        doReturn(institutionMock)
-                .when(apiConnector)
-                .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -291,7 +286,6 @@ class KafkaInterceptorTest {
         ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
-        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, times(1)).validate(any(), eq(allowedProductsMap));
         verifyNoMoreInteractions(apiConnector);
@@ -307,10 +301,6 @@ class KafkaInterceptorTest {
         String prodInteropCollId = "prod-interop-coll";
         Institution institutionMock = returnIntitutionMock();
         User userMock = returnUserMock(1);
-
-        doReturn(institutionMock)
-                .when(apiConnector)
-                .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -329,11 +319,10 @@ class KafkaInterceptorTest {
         ConsumerRecord<String, String> capturedNotification = notificationArgumentCaptor.getValue();
         reflectionEqualsByName(notificationPayload, capturedNotification, "updatedAt");
 
-        verify(apiConnector, timeout(1000).times(1)).getInstitutionById(notificationPayload.getInternalIstitutionID());
         verify(apiConnector, timeout(1000).times(1)).getInstitutionProductUsers(notificationPayload.getInternalIstitutionID(), notificationPayload.getProduct());
         verify(validationStrategy, times(1)).validate(any(), eq(allowedProductsMap));
-        verify(apiConnector, times(1)).autoApprovalOnboarding(eq(institutionMock.getExternalId()), eq(prodInteropCollId), requestArgumentCaptor.capture());
-        AutoApprovalOnboardingRequest request1 = requestArgumentCaptor.getValue();
+        verify(apiConnector, times(1)).onboarding(requestArgumentCaptor.capture());
+        OnboardingProductRequest request1 = requestArgumentCaptor.getValue();
         assertNotNull(request1);
         verifyNoMoreInteractions(apiConnector);
         verifyNoMoreInteractions(validationStrategy);
@@ -349,9 +338,6 @@ class KafkaInterceptorTest {
         Institution institutionMock = returnIntitutionMock();
 
         User userMock = returnUserMock(1);
-        doReturn(institutionMock)
-                .when(apiConnector)
-                .getInstitutionById(anyString());
         doReturn(List.of(userMock))
                 .when(apiConnector)
                 .getInstitutionProductUsers(anyString(), anyString());
@@ -427,8 +413,8 @@ class KafkaInterceptorTest {
     private InstitutionOnboardedNotification returnNotificationMock(int bias) {
         InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
         notificationMock.setId(UUID.randomUUID().toString());
-        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
-        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
+        InstitutionToNotify institution = mockInstance(new InstitutionToNotify(), bias);
+        Billing billing = mockInstance(new Billing(), bias);
         notificationMock.setBilling(billing);
         notificationMock.setInstitution(institution);
         return notificationMock;

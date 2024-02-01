@@ -11,14 +11,20 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.client.InternalApiRestClient;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.InstitutionResponse;
 import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.UserResponse;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.mapper.InstitutionMapper;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.mapper.InstitutionMapperImpl;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.mapper.UserMapper;
+import it.pagopa.selfcare.onboarding.interceptor.connector.rest.model.mapper.UserMapperImpl;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,14 +36,21 @@ import static it.pagopa.selfcare.onboarding.interceptor.connector.rest.InternalA
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {InternalApiConnectorImpl.class, InstitutionMapperImpl.class, UserMapperImpl.class})
 public class InternalApiConnectorImplTest {
 
-    @InjectMocks
+    @Autowired
     private InternalApiConnectorImpl internalApiConnectorMock;
 
-    @Mock
+    @MockBean
     private InternalApiRestClient restClientMock;
+
+    @Spy
+    private InstitutionMapper institutionMapper = new InstitutionMapperImpl();
+
+    @Spy
+    private UserMapper userMapper = new UserMapperImpl();
 
     private final ObjectMapper mapper;
 
@@ -212,5 +225,5 @@ public class InternalApiConnectorImplTest {
         verifyNoMoreInteractions(restClientMock);
     }
 
-
+        //TODO: add tests to the new onboarding method
 }

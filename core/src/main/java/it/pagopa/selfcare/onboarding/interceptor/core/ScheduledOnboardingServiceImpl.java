@@ -51,9 +51,8 @@ public class ScheduledOnboardingServiceImpl implements ScheduledOnboardingServic
         try {
             if (oldest != null && onboardingValidator.validate(oldest.getNotification(), institutionProductsAllowedMap)) {
                 for (String productId : institutionProductsAllowedMap.get().get(oldest.getNotification().getProduct())) {
-                    internalApiConnector.autoApprovalOnboarding(oldest.getNotification().getInstitution().getTaxCode(),
-                            productId,
-                            oldest.getRequest());
+                    //TODO retrieve institution and fill missing fields on the onbaording request retrieved from DB
+                    internalApiConnector.onboarding(oldest.getRequest());
                     pendingOnboardingConnector.deleteById(oldest.getId());
                     log.debug(LogUtils.CONFIDENTIAL_MARKER, "KafkaInterceptor onboarded request = {}", oldest);
                 }

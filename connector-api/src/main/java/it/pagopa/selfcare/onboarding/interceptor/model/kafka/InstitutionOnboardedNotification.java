@@ -1,8 +1,10 @@
 package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.RootParent;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.Billing;
 import lombok.Data;
+
+import java.time.OffsetDateTime;
 
 @Data
 public class InstitutionOnboardedNotification {
@@ -16,12 +18,11 @@ public class InstitutionOnboardedNotification {
     private String contentType;
     private String onboardingTokenId;
     private String pricingPlan;
-    private InstitutionOnboarded institution;
-    private InstitutionOnboardedBilling billing;
-    private String  updatedAt;
-    private String createdAt;
-    private String closedAt;
-    private String subUnitCode;
-    private String subUnitType;
-    private RootParent rootParent;
+    private InstitutionToNotify institution;
+    private Billing billing;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime closedAt;
+    private OffsetDateTime updatedAt;
+    private QueueEvent notificationType;
+
 }

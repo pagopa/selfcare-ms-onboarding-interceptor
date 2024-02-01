@@ -1,6 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.connector.dao.model;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingProductRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import lombok.Data;
@@ -40,7 +40,7 @@ public class PendingOnboardingEntity implements PendingOnboardingNotificationOpe
     @LastModifiedDate
     private Instant modifiedAt;
 
-    private AutoApprovalOnboardingRequest request;
+    private OnboardingProductRequest request;
 
     private InstitutionOnboardedNotification notification;
 

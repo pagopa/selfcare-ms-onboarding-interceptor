@@ -1,11 +1,13 @@
 package it.pagopa.selfcare.onboarding.interceptor.model.kafka;
 
 import it.pagopa.selfcare.commons.base.utils.InstitutionType;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.PspData;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.RootParent;
 import lombok.Data;
 
 @Data
-public class InstitutionOnboarded {
+public class InstitutionToNotify {
+
     private InstitutionType institutionType;
     private String description;
     private String digitalAddress;
@@ -14,6 +16,7 @@ public class InstitutionOnboarded {
     private String origin;
     private String originId;
     private String zipCode;
+    private PspData paymentServiceProvider;
     private String istatCode;
     private String city;
     private String country;
@@ -22,4 +25,5 @@ public class InstitutionOnboarded {
     private String category;
     private String subUnitType;
     private RootParent rootParent;
+
 }

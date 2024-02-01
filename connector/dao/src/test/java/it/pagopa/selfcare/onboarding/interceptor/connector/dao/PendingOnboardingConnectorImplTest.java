@@ -2,9 +2,8 @@ package it.pagopa.selfcare.onboarding.interceptor.connector.dao;
 
 import it.pagopa.selfcare.onboarding.interceptor.connector.dao.model.PendingOnboardingEntity;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.*;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboarded;
-import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedBilling;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
+import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionToNotify;
 import it.pagopa.selfcare.onboarding.interceptor.model.onboarding.PendingOnboardingNotificationOperations;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,7 @@ import static it.pagopa.selfcare.commons.utils.TestUtils.mockInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
+//TODO: update tests once implemented what's proposed on the implementation class
 public class PendingOnboardingConnectorImplTest {
 
     private final PendingOnboardingsRepository repositoryMock;
@@ -204,11 +203,11 @@ public class PendingOnboardingConnectorImplTest {
     private PendingOnboardingEntity returnMock(int bias) {
         InstitutionOnboardedNotification notificationMock = mockInstance(new InstitutionOnboardedNotification(), bias);
         notificationMock.setId(UUID.randomUUID().toString());
-        InstitutionOnboarded institution = mockInstance(new InstitutionOnboarded(), bias);
-        InstitutionOnboardedBilling billing = mockInstance(new InstitutionOnboardedBilling(), bias);
+        InstitutionToNotify institution = mockInstance(new InstitutionToNotify(), bias);
+        Billing billing = mockInstance(new Billing(), bias);
         notificationMock.setBilling(billing);
         notificationMock.setInstitution(institution);
-        AutoApprovalOnboardingRequest requestMock = mockInstance(new AutoApprovalOnboardingRequest(), bias);
+        OnboardingProductRequest requestMock = mockInstance(new OnboardingProductRequest(), bias);
         requestMock.setAssistanceContacts(mockInstance(new AssistanceContacts(), bias));
         requestMock.setBillingData(mockInstance(new BillingData(), bias));
         requestMock.setUsers(List.of(mockInstance(new User(), bias)));

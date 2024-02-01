@@ -1,6 +1,6 @@
 package it.pagopa.selfcare.onboarding.interceptor.model.onboarding;
 
-import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingProductRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.kafka.InstitutionOnboardedNotification;
 
 import java.time.Instant;
@@ -14,9 +14,9 @@ public interface PendingOnboardingNotificationOperations {
 
     void setCreatedAt(Instant createdAt);
 
-    AutoApprovalOnboardingRequest getRequest();
+    OnboardingProductRequest getRequest();
 
-    void setRequest(AutoApprovalOnboardingRequest request);
+    void setRequest(OnboardingProductRequest request);
 
     InstitutionOnboardedNotification getNotification();
 

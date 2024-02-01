@@ -2,6 +2,7 @@ package it.pagopa.selfcare.onboarding.interceptor.api;
 
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.AutoApprovalOnboardingRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.Institution;
+import it.pagopa.selfcare.onboarding.interceptor.model.institution.OnboardingProductRequest;
 import it.pagopa.selfcare.onboarding.interceptor.model.institution.User;
 import it.pagopa.selfcare.onboarding.interceptor.model.product.Product;
 
@@ -15,5 +16,7 @@ public interface InternalApiConnector {
     List<User> getInstitutionProductUsers(String institutionId, String productId);
 
     Product getProduct(String productId);
+
+    void onboarding(OnboardingProductRequest request);
 
 }
