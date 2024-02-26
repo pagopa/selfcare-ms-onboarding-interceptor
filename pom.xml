@@ -16,7 +16,7 @@
   <name>selc-onboarding-interceptor</name>
   <description>Microservice to manage onboarding to test enviroment for given products</description>
   <properties>
-    <selc-commons.version>2.4.9</selc-commons.version>
+    <selc-commons.version>2.5.1</selc-commons.version>
   </properties>
 
   <dependencyManagement>
