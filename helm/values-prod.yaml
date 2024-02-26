@@ -1,3 +1,5 @@
+replicaCount: 0
+
 image:
   repository: selcpacr.azurecr.io/selfcaremsonboardinginterceptor
   pullPolicy: Always # TODO change me in IfNotPresent when each build will have a different tag
