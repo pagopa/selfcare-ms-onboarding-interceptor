@@ -16,14 +16,6 @@ ingress:
         - path: /ms-onboarding-interceptor/(.*)
           pathType: ImplementationSpecific
 
-resources:
-  requests:
-    cpu: 300m
-    memory: 500M
-  limits:
-    cpu: 600m
-    memory: 800M
-
 autoscaling:
   enabled: false
   minReplicas: 0
